@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>playlist</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #fff;
+    color: #1a1a1a;
+    font-family: 'Inter', -apple-system, sans-serif;
+    padding: 48px 56px 120px;
+    min-height: 100vh;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 0;
+  }
+
+  .track {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.1s;
+    min-width: 0;
+  }
+
+  .track:hover { background: #f1f1f0; }
+  .track.active { background: #f1f1f0; }
+
+  .eq {
+    display: none;
+    align-items: flex-end;
+    gap: 1.5px;
+    height: 12px;
+    flex-shrink: 0;
+    width: 14px;
+  }
+  .track.playing .eq { display: flex; }
+
+  .eq-b {
+    width: 2.5px;
+    background: #1a1a1a;
+    border-radius: 1px;
+    animation: eq 0.7s ease-in-out infinite alternate;
+  }
+  .eq-b:nth-child(1) { height: 50%; animation-delay: 0s; }
+  .eq-b:nth-child(2) { height: 100%; animation-delay: 0.15s; }
+  .eq-b:nth-child(3) { height: 65%; animation-delay: 0.3s; }
+
+  @keyframes eq {
+    from { transform: scaleY(0.25); }
+    to { transform: scaleY(1); }
+  }
+
+  .track-text {
+    font-size: 14px;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+  }
+
+  .track-text .name { font-weight: 500; }
+  .track-text .sep { color: #b0b0b0; margin: 0 4px; }
+  .track-text .artist { color: #888; font-weight: 400; }
+
+  /* PLAYER */
+  #bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid #e8e8e8;
+    height: 64px;
+    padding: 0 56px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  #bar.on { transform: translateY(0); }
+
+  #now {
+    font-size: 13px;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #1a1a1a;
+  }
+  #now .n { font-weight: 500; }
+  #now .a { color: #888; }
+
+  .btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    color: #888;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: color 0.1s, background 0.1s;
+    font-family: inherit;
+    line-height: 1;
+  }
+  .btn:hover { color: #1a1a1a; background: #f1f1f0; }
+
+  #pp {
+    font-size: 15px;
+    color: #1a1a1a;
+    padding: 6px 10px;
+  }
+
+  .prog-wrap {
+    flex: 1;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .prog-track {
+    height: 2px;
+    background: #e8e8e8;
+    border-radius: 999px;
+    cursor: pointer;
+    position: relative;
+  }
+
+  #prog-fill {
+    height: 100%;
+    background: #1a1a1a;
+    border-radius: 999px;
+    width: 0%;
+    pointer-events: none;
+    transition: width 0.4s linear;
+  }
+
+  .times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #b0b0b0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #yt-wrap {
+    position: fixed;
+    left: -9999px; bottom: -9999px;
+    width: 1px; height: 1px;
+    opacity: 0; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="yt-wrap"><div id="yt-player"></div></div>
+
+<div class="grid" id="grid"></div>
+
+<div id="bar">
+  <div id="now"><span class="n"></span><span class="sep"> – </span><span class="a"></span></div>
+  <div style="display:flex;align-items:center;gap:4px">
+    <button class="btn" id="prev">◀◀</button>
+    <button class="btn" id="pp">▶</button>
+    <button class="btn" id="next">▶▶</button>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-track" id="prog-track">
+      <div id="prog-fill"></div>
+    </div>
+    <div class="times"><span id="tc">0:00</span><span id="td">0:00</span></div>
+  </div>
+</div>
+
+<script>
+const tracks = [
+  { title: "Redbone",                    artist: "Childish Gambino",              yt: "Kp7eSUU9oy8" },
+  { title: "Motion",                     artist: "Four Tet",                      yt: "u7K72X4eo_s" },
+  { title: "Never Catch Me",             artist: "Flying Lotus ft. Kendrick",     yt: "gOAa7bwbttI" },
+  { title: "Intro",                      artist: "The xx",                        yt: "qFq6nnw7xg0" },
+  { title: "Crystalised",               artist: "The xx",                        yt: "TD6dTGSVbHo" },
+  { title: "Holocene",                   artist: "Bon Iver",                      yt: "TWcyIpul8OE" },
+  { title: "Everything in Its Right Place", artist: "Radiohead",                  yt: "onRk0sjSgFU" },
+  { title: "An Ending (Ascent)",         artist: "Brian Eno",                     yt: "o2lGQwQKcKg" },
+  { title: "Comptine d'un autre été",    artist: "Yann Tiersen",                  yt: "H3v9unphfi0" },
+  { title: "Once in a Lifetime",         artist: "Talking Heads",                 yt: "98AJUj-qxHI" },
+  { title: "Electric Feel",             artist: "MGMT",                          yt: "MmZexg8sxyk" },
+  { title: "God's Plan",                 artist: "Drake",                         yt: "xpVfcZ0ZcFM" },
+];
+
+let cur = -1, playing = false, yt = null, ytOk = false, timer = null;
+
+function render() {
+  const g = document.getElementById('grid');
+  g.innerHTML = '';
+  tracks.forEach((t, i) => {
+    const d = document.createElement('div');
+    d.className = 'track' + (i === cur ? (playing ? ' active playing' : ' active') : '');
+    d.dataset.i = i;
+    d.innerHTML = `
+      <div class="eq"><div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div></div>
+      <div class="track-text">
+        <span class="name">${t.title}</span><span class="sep"> – </span><span class="artist">${t.artist}</span>
+      </div>`;
+    d.onclick = () => play(i);
+    g.appendChild(d);
+  });
+}
+
+function play(i) {
+  cur = i; playing = true;
+  render();
+  const t = tracks[i];
+  document.querySelector('#now .n').textContent = t.title;
+  document.querySelector('#now .a').textContent = t.artist;
+  document.getElementById('bar').classList.add('on');
+  document.getElementById('pp').textContent = '⏸';
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('tc').textContent = '0:00';
+  document.getElementById('td').textContent = '0:00';
+  if (ytOk) { yt.loadVideoById(t.yt); yt.playVideo(); }
+  if (timer) clearInterval(timer);
+  timer = setInterval(tick, 500);
+}
+
+function tick() {
+  if (!ytOk || !yt.getDuration) return;
+  try {
+    const d = yt.getDuration(), c = yt.getCurrentTime();
+    if (d > 0) {
+      document.getElementById('prog-fill').style.width = (c/d*100) + '%';
+      document.getElementById('tc').textContent = fmt(c);
+      document.getElementById('td').textContent = fmt(d);
+    }
+  } catch(e) {}
+}
+
+function fmt(s) {
+  return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
+}
+
+document.getElementById('pp').onclick = () => {
+  if (!ytOk || cur < 0) return;
+  if (playing) {
+    yt.pauseVideo(); playing = false;
+    document.getElementById('pp').textContent = '▶';
+    document.querySelectorAll('.track.playing').forEach(el => el.classList.remove('playing'));
+  } else {
+    yt.playVideo(); playing = true;
+    document.getElementById('pp').textContent = '⏸';
+    document.querySelectorAll('.track[data-i="'+cur+'"]').forEach(el => el.classList.add('playing'));
+  }
+};
+
+document.getElementById('prev').onclick = () => { if (cur > 0) play(cur-1); };
+document.getElementById('next').onclick = () => { if (cur < tracks.length-1) play(cur+1); };
+
+document.getElementById('prog-track').onclick = (e) => {
+  if (!ytOk || cur < 0) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  yt.seekTo(yt.getDuration() * (e.clientX - r.left) / r.width, true);
+};
+
+window.onYouTubeIframeAPIReady = () => {
+  yt = new YT.Player('yt-player', {
+    height: '1', width: '1', videoId: '',
+    playerVars: { autoplay: 0, controls: 0 },
+    events: {
+      onReady: () => { ytOk = true; },
+      onStateChange: (e) => {
+        if (e.data === YT.PlayerState.ENDED && cur < tracks.length-1) play(cur+1);
+      }
+    }
+  });
+};
+
+const s = document.createElement('script');
+s.src = 'https://www.youtube.com/iframe_api';
+document.head.appendChild(s);
+
+render();
+</script>
+</body>
+</html>
