@@ -10,7 +10,6 @@
 html,body{height:100%;overflow:hidden;font-family:'Space Grotesk',sans-serif}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:#0a0a0a}
 
-/* ── background ── */
 .bg-layer{
   position:fixed;inset:0;z-index:0;
   background-size:cover;background-position:center;
@@ -22,102 +21,127 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 #bg-a{opacity:1}
 #bg-b{opacity:0}
 
-/* always-dark top + bottom gradient */
-.fade-top{
-  position:fixed;top:0;left:0;right:0;height:45vh;z-index:1;pointer-events:none;
-  background:linear-gradient(to bottom,rgba(0,0,0,0.7) 0%,transparent 100%);
-}
-.fade-bot{
-  position:fixed;bottom:0;left:0;right:0;height:40vh;z-index:1;pointer-events:none;
-  background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 100%);
-}
+.fade-top{position:fixed;top:0;left:0;right:0;height:45vh;z-index:1;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,0.7) 0%,transparent 100%)}
+.fade-bot{position:fixed;bottom:0;left:0;right:0;height:40vh;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 100%)}
 
-/* ── drum ── */
-.drum-wrap{
-  position:relative;z-index:2;
-  width:100%;max-width:600px;
-  height:100vh;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-}
+.drum-wrap{position:relative;z-index:2;width:100%;max-width:600px;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.drum{width:100%;padding:0 40px;display:flex;flex-direction:column;align-items:center;color:#fff}
 
-.drum{
-  width:100%;padding:0 40px;
-  display:flex;flex-direction:column;align-items:center;
-  color:#fff;
-}
-
-.track{
-  text-align:center;cursor:pointer;width:100%;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;
-  padding:8px 0;
-}
+.track{text-align:center;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;padding:8px 0}
 .track .title{display:block}
 .track .artist{display:block}
 
 .track[data-dist="0"]{padding:12px 0}
-.track[data-dist="0"] .title{
-  font-size:28px;font-weight:600;
-  color:#fff;letter-spacing:-0.02em;line-height:1.15;
-  text-shadow:0 2px 24px rgba(0,0,0,0.5);
-}
-.track[data-dist="0"] .artist{
-  font-size:12px;font-weight:300;color:rgba(255,255,255,0.55);
-  letter-spacing:0.07em;text-transform:uppercase;margin-top:5px;
-  text-shadow:0 1px 12px rgba(0,0,0,0.4);
-}
+.track[data-dist="0"] .title{font-size:28px;font-weight:600;color:#fff;letter-spacing:-0.02em;line-height:1.15;text-shadow:0 2px 24px rgba(0,0,0,0.5)}
+.track[data-dist="0"] .artist{font-size:12px;font-weight:300;color:rgba(255,255,255,0.55);letter-spacing:0.07em;text-transform:uppercase;margin-top:5px;text-shadow:0 1px 12px rgba(0,0,0,0.4)}
 .track[data-dist="1"]{padding:8px 0}
 .track[data-dist="1"] .title{font-size:17px;font-weight:400;color:rgba(255,255,255,0.45);letter-spacing:-0.01em}
 .track[data-dist="1"] .artist{font-size:10px;font-weight:300;color:rgba(255,255,255,0.2);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px}
-
 .track[data-dist="2"]{padding:6px 0}
 .track[data-dist="2"] .title{font-size:14px;font-weight:400;color:rgba(255,255,255,0.18)}
 .track[data-dist="2"] .artist{font-size:9px;color:rgba(255,255,255,0.08);letter-spacing:0.05em;text-transform:uppercase;margin-top:1px}
-
 .track[data-dist="3"]{padding:4px 0}
 .track[data-dist="3"] .title{font-size:12px;font-weight:300;color:rgba(255,255,255,0.06)}
 .track[data-dist="3"] .artist{display:none}
-
 .track[data-dist="4"]{padding:3px 0}
 .track[data-dist="4"] .title{font-size:11px;font-weight:300;color:rgba(255,255,255,0.02)}
 .track[data-dist="4"] .artist{display:none}
 
-/* ── frosted player bar ── */
+/* ── player bar ── */
 #bar{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;
-  display:flex;align-items:center;gap:20px;
-  padding:12px 24px;
-  border-radius:20px;
+  display:flex;align-items:center;gap:20px;padding:12px 24px;border-radius:20px;
   background:rgba(255,255,255,0.08);
   backdrop-filter:blur(32px) saturate(1.8);
   -webkit-backdrop-filter:blur(32px) saturate(1.8);
   border:1px solid rgba(255,255,255,0.12);
-  box-shadow:0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow:0 8px 40px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.1);
   white-space:nowrap;
 }
-
-.ctrl{
-  background:none;border:none;cursor:pointer;
-  color:rgba(255,255,255,0.4);font-size:11px;
-  font-family:'Space Grotesk',sans-serif;
-  padding:4px 6px;transition:color 0.15s;letter-spacing:0.04em;
-}
+.ctrl{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.4);font-size:11px;font-family:'Space Grotesk',sans-serif;padding:4px 6px;transition:color 0.15s;letter-spacing:0.04em}
 .ctrl:hover{color:rgba(255,255,255,0.85)}
 #pp{color:rgba(255,255,255,0.9);font-size:14px}
 #shuf.on{color:rgba(255,255,255,0.9)}
+#fs-btn{font-size:13px}
 
 .prog-wrap{display:flex;align-items:center;gap:8px}
-.prog-track{
-  width:110px;height:2px;
-  background:rgba(255,255,255,0.15);
-  border-radius:999px;cursor:pointer;position:relative;
-}
-#prog-fill{
-  height:100%;background:rgba(255,255,255,0.75);
-  border-radius:999px;width:0%;
-  pointer-events:none;transition:width 0.4s linear;
-}
+.prog-track{width:110px;height:2px;background:rgba(255,255,255,0.15);border-radius:999px;cursor:pointer;position:relative}
+#prog-fill{height:100%;background:rgba(255,255,255,0.75);border-radius:999px;width:0%;pointer-events:none;transition:width 0.4s linear}
 .time{font-size:10px;font-weight:300;color:rgba(255,255,255,0.3);min-width:28px;letter-spacing:0.02em}
 #tc{text-align:right}
+
+/* ── add track panel ── */
+#add-panel{
+  position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:20;
+  display:none;
+  flex-direction:column;gap:10px;
+  padding:16px 20px;border-radius:16px;
+  background:rgba(20,20,20,0.75);
+  backdrop-filter:blur(40px) saturate(1.8);
+  -webkit-backdrop-filter:blur(40px) saturate(1.8);
+  border:1px solid rgba(255,255,255,0.12);
+  box-shadow:0 8px 40px rgba(0,0,0,0.5);
+  min-width:340px;
+}
+#add-panel.open{display:flex}
+
+#add-panel label{font-size:11px;font-weight:400;color:rgba(255,255,255,0.45);letter-spacing:0.06em;text-transform:uppercase}
+
+#url-input{
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px;
+  color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;
+  padding:9px 12px;outline:none;width:100%;
+  transition:border-color 0.15s;
+}
+#url-input::placeholder{color:rgba(255,255,255,0.25)}
+#url-input:focus{border-color:rgba(255,255,255,0.3)}
+
+.add-row{display:flex;gap:8px;align-items:center}
+
+#fetch-btn{
+  flex-shrink:0;
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);
+  border-radius:8px;color:#fff;font-family:'Space Grotesk',sans-serif;
+  font-size:12px;padding:8px 14px;cursor:pointer;transition:background 0.15s;white-space:nowrap;
+}
+#fetch-btn:hover{background:rgba(255,255,255,0.18)}
+
+#status{font-size:11px;color:rgba(255,255,255,0.4);min-height:14px}
+
+/* code result box */
+#code-box{
+  display:none;
+  flex-direction:column;gap:6px;
+}
+#code-box.show{display:flex}
+
+#code-out{
+  font-family:'Space Mono',monospace,sans-serif;
+  font-size:11px;line-height:1.5;
+  background:rgba(0,0,0,0.4);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;padding:10px 12px;
+  color:#a8f0a8;word-break:break-all;white-space:pre-wrap;
+  user-select:all;
+}
+
+#copy-btn{
+  align-self:flex-end;
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);
+  border-radius:7px;color:rgba(255,255,255,0.6);font-family:'Space Grotesk',sans-serif;
+  font-size:11px;padding:5px 12px;cursor:pointer;transition:all 0.15s;
+}
+#copy-btn:hover{background:rgba(255,255,255,0.15);color:#fff}
+#copy-btn.copied{color:#a8f0a8;border-color:rgba(168,240,168,0.3)}
+
+/* hint */
+#hint{
+  position:fixed;top:20px;right:24px;z-index:15;
+  font-size:10px;font-weight:300;color:rgba(255,255,255,0.2);
+  letter-spacing:0.04em;pointer-events:none;
+}
 
 #yt-wrap{position:fixed;left:-9999px;bottom:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
 </style>
@@ -128,8 +152,23 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <div class="bg-layer" id="bg-b"></div>
 <div class="fade-top"></div>
 <div class="fade-bot"></div>
-
 <div id="yt-wrap"><div id="yt-player"></div></div>
+
+<div id="hint">A — додати трек &nbsp;·&nbsp; ×2 — повний екран</div>
+
+<!-- add track panel -->
+<div id="add-panel">
+  <label>Додати трек</label>
+  <div class="add-row">
+    <input id="url-input" type="text" placeholder="https://youtube.com/watch?v=...">
+    <button id="fetch-btn">→ Отримати</button>
+  </div>
+  <div id="status"></div>
+  <div id="code-box">
+    <pre id="code-out"></pre>
+    <button id="copy-btn">Копіювати</button>
+  </div>
+</div>
 
 <div class="drum-wrap">
   <div class="drum" id="drum"></div>
@@ -145,6 +184,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
     <span class="time" id="td">0:00</span>
   </div>
   <button class="ctrl" id="shuf" title="Shuffle">⇄</button>
+  <button class="ctrl" id="fs-btn" title="Fullscreen">⛶</button>
 </div>
 
 <script>
@@ -169,6 +209,24 @@ let queue = tracks.map((_,i)=>i);
 let yt = null, ytOk = false, timer = null;
 let bgActive = 'a';
 
+/* ── fullscreen ── */
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(()=>{});
+  } else {
+    document.exitFullscreen().catch(()=>{});
+  }
+}
+
+document.addEventListener('dblclick', (e) => {
+  // don't trigger if clicking inside add panel or bar
+  if (e.target.closest('#add-panel') || e.target.closest('#bar')) return;
+  toggleFullscreen();
+});
+
+document.getElementById('fs-btn').addEventListener('click', toggleFullscreen);
+
+/* ── background ── */
 function setBackground(track) {
   const next = bgActive === 'a' ? 'b' : 'a';
   const layerNext = document.getElementById('bg-'+next);
@@ -178,17 +236,13 @@ function setBackground(track) {
   const img = new Image();
   img.onload = () => {
     layerNext.style.backgroundImage = `url('${img.src}')`;
-    // small delay so the new layer is painted before fading in
     requestAnimationFrame(() => {
       layerNext.style.opacity = '1';
       layerCur.style.opacity  = '0';
       bgActive = next;
     });
   };
-  img.onerror = () => {
-    img.onerror = null;
-    img.src = hq;
-  };
+  img.onerror = () => { img.onerror=null; img.src=hq; };
   img.src = maxres;
 }
 
@@ -232,6 +286,7 @@ function updateDrum() {
   }
 }
 
+/* ── playback ── */
 function play() {
   playing = true;
   updateDrum();
@@ -289,15 +344,16 @@ document.getElementById('prog-track').addEventListener('click', (e) => {
   yt.seekTo(yt.getDuration()*(e.clientX-r.left)/r.width,true);
 });
 
-/* scroll */
+/* ── scroll ── */
 let wb=0,wraf=null;
 window.addEventListener('wheel',(e)=>{
   e.preventDefault(); wb+=e.deltaY;
   if(wraf)return;
   wraf=requestAnimationFrame(function d(){
     if(Math.abs(wb)>=50){
-      wb>0&&cur<queue.length-1?cur++:wb<0&&cur>0?cur--:null;
-      play(); wb=0;
+      if(wb>0&&cur<queue.length-1){cur++;play();}
+      else if(wb<0&&cur>0){cur--;play();}
+      wb=0;
     }
     wraf=Math.abs(wb)>=50?requestAnimationFrame(d):null;
   });
@@ -312,6 +368,85 @@ window.addEventListener('touchend',e=>{
   ty=null;
 });
 
+/* ── add track panel ── */
+function extractYtId(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+const panel = document.getElementById('add-panel');
+const urlInput = document.getElementById('url-input');
+const statusEl = document.getElementById('status');
+const codeBox  = document.getElementById('code-box');
+const codeOut  = document.getElementById('code-out');
+const copyBtn  = document.getElementById('copy-btn');
+
+// toggle panel with "A" key
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'a' || e.key === 'A') {
+    if (e.target.tagName === 'INPUT') return;
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) {
+      urlInput.value = '';
+      statusEl.textContent = '';
+      codeBox.classList.remove('show');
+      setTimeout(()=>urlInput.focus(), 50);
+    }
+  }
+  if (e.key === 'Escape') panel.classList.remove('open');
+});
+
+document.getElementById('fetch-btn').addEventListener('click', async () => {
+  const url = urlInput.value.trim();
+  const id = extractYtId(url);
+  if (!id) { statusEl.textContent = '⚠ не вдалось знайти ID відео'; return; }
+
+  statusEl.textContent = 'завантаження...';
+  codeBox.classList.remove('show');
+
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://youtube.com/watch?v=${id}&format=json`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+
+    // clean up title — remove " - Official Video" etc
+    let title = data.title
+      .replace(/\s*[\(\[].*(official|video|audio|lyrics|visualizer|mv|clip|hd|4k).*[\)\]]/gi,'')
+      .replace(/\s*-\s*(official|lyrics|audio|video|visualizer).*/gi,'')
+      .trim();
+
+    let artist = data.author_name
+      .replace(/\s*-\s*Topic$/i,'')
+      .replace(/VEVO$/i,'')
+      .trim();
+
+    const line = `  { title:"${title}", artist:"${artist}", yt:"${id}" },`;
+    codeOut.textContent = line;
+    codeBox.classList.add('show');
+    statusEl.textContent = '✓ готово — скопіюй і встав у масив tracks';
+    copyBtn.classList.remove('copied');
+    copyBtn.textContent = 'Копіювати';
+  } catch(e) {
+    statusEl.textContent = '⚠ помилка — перевір посилання';
+  }
+});
+
+copyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(codeOut.textContent).then(() => {
+    copyBtn.textContent = '✓ скопійовано';
+    copyBtn.classList.add('copied');
+    setTimeout(()=>{ copyBtn.textContent='Копіювати'; copyBtn.classList.remove('copied'); }, 2000);
+  });
+});
+
+// close panel on click outside
+document.addEventListener('click', (e) => {
+  if (!panel.contains(e.target) && !e.target.closest('#bar')) {
+    panel.classList.remove('open');
+  }
+});
+
+/* ── YouTube API ── */
 window.onYouTubeIframeAPIReady=()=>{
   yt=new YT.Player('yt-player',{
     height:'1',width:'1',videoId:'',
