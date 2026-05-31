@@ -8,24 +8,28 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;font-family:'Space Grotesk',sans-serif}
-body{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:#0a0a0a}
 
-/* ── background layers ── */
+/* ── background ── */
 .bg-layer{
   position:fixed;inset:0;z-index:0;
   background-size:cover;background-position:center;
-  filter:blur(60px) saturate(1.4) brightness(0.55);
-  transform:scale(1.15);
-  transition:opacity 0.9s ease;
+  filter:blur(70px) saturate(1.6) brightness(0.38);
+  transform:scale(1.2);
+  transition:opacity 1s ease;
   will-change:opacity;
 }
 #bg-a{opacity:1}
 #bg-b{opacity:0}
 
-/* dark vignette so edges are always dark */
-.vignette{
-  position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.55) 100%);
+/* always-dark top + bottom gradient */
+.fade-top{
+  position:fixed;top:0;left:0;right:0;height:45vh;z-index:1;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(0,0,0,0.7) 0%,transparent 100%);
+}
+.fade-bot{
+  position:fixed;bottom:0;left:0;right:0;height:40vh;z-index:1;pointer-events:none;
+  background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 100%);
 }
 
 /* ── drum ── */
@@ -36,93 +40,94 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
   display:flex;align-items:center;justify-content:center;
 }
 
-.drum-wrap::before,.drum-wrap::after{
-  content:'';position:absolute;left:0;right:0;height:36vh;z-index:3;pointer-events:none;
-}
-
 .drum{
   width:100%;padding:0 40px;
   display:flex;flex-direction:column;align-items:center;
-  position:relative;z-index:2;
+  color:#fff;
 }
 
 .track{
   text-align:center;cursor:pointer;width:100%;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;
   padding:8px 0;
-  transition:color 0.6s ease, text-shadow 0.6s ease;
 }
 .track .title{display:block}
 .track .artist{display:block}
 
 .track[data-dist="0"]{padding:12px 0}
-.track[data-dist="0"] .title{font-size:28px;font-weight:600;letter-spacing:-0.02em;line-height:1.15}
-.track[data-dist="0"] .artist{font-size:12px;font-weight:300;letter-spacing:0.07em;text-transform:uppercase;margin-top:5px;opacity:0.6}
-
+.track[data-dist="0"] .title{
+  font-size:28px;font-weight:600;
+  color:#fff;letter-spacing:-0.02em;line-height:1.15;
+  text-shadow:0 2px 24px rgba(0,0,0,0.5);
+}
+.track[data-dist="0"] .artist{
+  font-size:12px;font-weight:300;color:rgba(255,255,255,0.55);
+  letter-spacing:0.07em;text-transform:uppercase;margin-top:5px;
+  text-shadow:0 1px 12px rgba(0,0,0,0.4);
+}
 .track[data-dist="1"]{padding:8px 0}
-.track[data-dist="1"] .title{font-size:17px;font-weight:400;letter-spacing:-0.01em;opacity:0.5}
-.track[data-dist="1"] .artist{font-size:10px;font-weight:300;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;opacity:0.25}
+.track[data-dist="1"] .title{font-size:17px;font-weight:400;color:rgba(255,255,255,0.45);letter-spacing:-0.01em}
+.track[data-dist="1"] .artist{font-size:10px;font-weight:300;color:rgba(255,255,255,0.2);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px}
 
 .track[data-dist="2"]{padding:6px 0}
-.track[data-dist="2"] .title{font-size:14px;font-weight:400;opacity:0.2}
-.track[data-dist="2"] .artist{font-size:9px;letter-spacing:0.05em;text-transform:uppercase;margin-top:1px;opacity:0.1}
+.track[data-dist="2"] .title{font-size:14px;font-weight:400;color:rgba(255,255,255,0.18)}
+.track[data-dist="2"] .artist{font-size:9px;color:rgba(255,255,255,0.08);letter-spacing:0.05em;text-transform:uppercase;margin-top:1px}
 
 .track[data-dist="3"]{padding:4px 0}
-.track[data-dist="3"] .title{font-size:12px;font-weight:300;opacity:0.07}
+.track[data-dist="3"] .title{font-size:12px;font-weight:300;color:rgba(255,255,255,0.06)}
 .track[data-dist="3"] .artist{display:none}
 
 .track[data-dist="4"]{padding:3px 0}
-.track[data-dist="4"] .title{font-size:11px;font-weight:300;opacity:0.03}
+.track[data-dist="4"] .title{font-size:11px;font-weight:300;color:rgba(255,255,255,0.02)}
 .track[data-dist="4"] .artist{display:none}
 
-/* text color: set via JS as CSS var */
-.drum{ --tc: #ffffff; color: var(--tc); }
-
-/* ── player bar ── */
+/* ── frosted player bar ── */
 #bar{
-  position:fixed;bottom:0;left:0;right:0;z-index:10;
-  display:flex;align-items:center;justify-content:center;gap:24px;
-  padding:14px 40px 24px;
-  background:linear-gradient(to top,rgba(0,0,0,0.5) 60%,transparent);
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;
+  display:flex;align-items:center;gap:20px;
+  padding:12px 24px;
+  border-radius:20px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(32px) saturate(1.8);
+  -webkit-backdrop-filter:blur(32px) saturate(1.8);
+  border:1px solid rgba(255,255,255,0.12);
+  box-shadow:0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
+  white-space:nowrap;
 }
 
 .ctrl{
   background:none;border:none;cursor:pointer;
-  font-size:11px;font-family:'Space Grotesk',sans-serif;
-  padding:6px;transition:opacity 0.15s;letter-spacing:0.05em;
-  opacity:0.4;
+  color:rgba(255,255,255,0.4);font-size:11px;
+  font-family:'Space Grotesk',sans-serif;
+  padding:4px 6px;transition:color 0.15s;letter-spacing:0.04em;
 }
-.ctrl:hover{opacity:0.85}
-#pp{font-size:13px;opacity:0.85}
-#shuf.on{opacity:0.85}
+.ctrl:hover{color:rgba(255,255,255,0.85)}
+#pp{color:rgba(255,255,255,0.9);font-size:14px}
+#shuf.on{color:rgba(255,255,255,0.9)}
 
-/* bar inherits text color too */
-#bar{ color: var(--bar-tc, #fff); }
-
-.prog-wrap{display:flex;align-items:center;gap:10px}
+.prog-wrap{display:flex;align-items:center;gap:8px}
 .prog-track{
-  width:130px;height:1px;
+  width:110px;height:2px;
+  background:rgba(255,255,255,0.15);
   border-radius:999px;cursor:pointer;position:relative;
-  background:rgba(128,128,128,0.3);
 }
 #prog-fill{
-  height:100%;border-radius:999px;width:0%;
-  pointer-events:none;transition:width 0.4s linear, background 0.6s ease;
+  height:100%;background:rgba(255,255,255,0.75);
+  border-radius:999px;width:0%;
+  pointer-events:none;transition:width 0.4s linear;
 }
-.time{font-size:11px;font-weight:300;min-width:30px;letter-spacing:0.02em;opacity:0.35}
+.time{font-size:10px;font-weight:300;color:rgba(255,255,255,0.3);min-width:28px;letter-spacing:0.02em}
 #tc{text-align:right}
 
 #yt-wrap{position:fixed;left:-9999px;bottom:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
-
-/* hidden canvas for color sampling */
-#sampleCanvas{display:none}
 </style>
 </head>
 <body>
+
 <div class="bg-layer" id="bg-a"></div>
 <div class="bg-layer" id="bg-b"></div>
-<div class="vignette"></div>
-<canvas id="sampleCanvas" width="20" height="20"></canvas>
+<div class="fade-top"></div>
+<div class="fade-bot"></div>
 
 <div id="yt-wrap"><div id="yt-player"></div></div>
 
@@ -162,95 +167,32 @@ const WINDOW = 4;
 let cur = 0, playing = false, shuffleOn = false;
 let queue = tracks.map((_,i)=>i);
 let yt = null, ytOk = false, timer = null;
-let bgActive = 'a'; // which bg layer is on top
-
-/* ── background crossfade + color detection ── */
-function thumbUrl(ytId) {
-  return `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`;
-}
-function thumbFallback(ytId) {
-  return `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
-}
-
-function getLuminance(r,g,b){
-  // perceived luminance
-  return (0.299*r + 0.587*g + 0.114*b) / 255;
-}
-
-function sampleImageColor(url, cb) {
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = () => {
-    try {
-      const canvas = document.getElementById('sampleCanvas');
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, 20, 20);
-      const data = ctx.getImageData(0, 0, 20, 20).data;
-      let r=0,g=0,b=0,count=0;
-      for(let i=0;i<data.length;i+=4){
-        r+=data[i]; g+=data[i+1]; b+=data[i+2]; count++;
-      }
-      r=r/count; g=g/count; b=b/count;
-      const lum = getLuminance(r,g,b);
-      cb(lum);
-    } catch(e) { cb(0.15); } // fallback: assume dark
-  };
-  img.onerror = () => cb(0.15);
-  img.src = url;
-}
+let bgActive = 'a';
 
 function setBackground(track) {
   const next = bgActive === 'a' ? 'b' : 'a';
   const layerNext = document.getElementById('bg-'+next);
   const layerCur  = document.getElementById('bg-'+bgActive);
-
-  const url = thumbUrl(track.yt);
-  const fallback = thumbFallback(track.yt);
-
-  // preload, fallback to hqdefault if maxres 404
+  const maxres = `https://i.ytimg.com/vi/${track.yt}/maxresdefault.jpg`;
+  const hq     = `https://i.ytimg.com/vi/${track.yt}/hqdefault.jpg`;
   const img = new Image();
   img.onload = () => {
     layerNext.style.backgroundImage = `url('${img.src}')`;
-    layerNext.style.opacity = '1';
-    layerCur.style.opacity = '0';
-    bgActive = next;
+    // small delay so the new layer is painted before fading in
+    requestAnimationFrame(() => {
+      layerNext.style.opacity = '1';
+      layerCur.style.opacity  = '0';
+      bgActive = next;
+    });
   };
   img.onerror = () => {
-    layerNext.style.backgroundImage = `url('${fallback}')`;
-    layerNext.style.opacity = '1';
-    layerCur.style.opacity = '0';
-    bgActive = next;
+    img.onerror = null;
+    img.src = hq;
   };
-  img.src = url;
-
-  // sample color to decide text color
-  sampleImageColor(fallback, (lum) => {
-    // after blur+darken (brightness 0.55), effective lum is lower
-    const effective = lum * 0.55;
-    let textColor, fillColor;
-    if (effective < 0.28) {
-      // dark bg → light text
-      textColor = '#ffffff';
-      fillColor = 'rgba(255,255,255,0.65)';
-    } else {
-      // light bg → dark text
-      textColor = '#111111';
-      fillColor = 'rgba(0,0,0,0.65)';
-    }
-    document.getElementById('drum').style.setProperty('--tc', textColor);
-    document.getElementById('bar').style.setProperty('--bar-tc', textColor);
-    document.getElementById('prog-fill').style.background = fillColor;
-
-    // update fade overlays direction
-    const isDark = effective < 0.28;
-    const fadeColor = isDark ? '#000000' : '#e8e4dc';
-    const before = document.querySelector('.drum-wrap::before');
-    // can't update pseudo-elements directly, use CSS vars instead
-    document.documentElement.style.setProperty('--fade-color', isDark ? 'rgba(0,0,0,' : 'rgba(232,228,220,');
-  });
+  img.src = maxres;
 }
 
-/* ── drum DOM ── */
+/* ── drum ── */
 function buildDrum() {
   const drum = document.getElementById('drum');
   drum.innerHTML = '';
@@ -261,8 +203,8 @@ function buildDrum() {
     div.addEventListener('click', () => {
       const offset = parseInt(div.dataset.offset);
       if (!isNaN(offset) && offset !== 0) {
-        const newPos = cur + offset;
-        if (newPos >= 0 && newPos < queue.length) { cur = newPos; play(); }
+        const np = cur + offset;
+        if (np >= 0 && np < queue.length) { cur = np; play(); }
       }
     });
     drum.appendChild(div);
@@ -290,7 +232,6 @@ function updateDrum() {
   }
 }
 
-/* ── playback ── */
 function play() {
   playing = true;
   updateDrum();
@@ -348,16 +289,15 @@ document.getElementById('prog-track').addEventListener('click', (e) => {
   yt.seekTo(yt.getDuration()*(e.clientX-r.left)/r.width,true);
 });
 
-/* ── scroll ── */
+/* scroll */
 let wb=0,wraf=null;
 window.addEventListener('wheel',(e)=>{
   e.preventDefault(); wb+=e.deltaY;
   if(wraf)return;
   wraf=requestAnimationFrame(function d(){
     if(Math.abs(wb)>=50){
-      if(wb>0&&cur<queue.length-1){cur++;play();}
-      else if(wb<0&&cur>0){cur--;play();}
-      wb=0;
+      wb>0&&cur<queue.length-1?cur++:wb<0&&cur>0?cur--:null;
+      play(); wb=0;
     }
     wraf=Math.abs(wb)>=50?requestAnimationFrame(d):null;
   });
@@ -389,7 +329,6 @@ document.head.appendChild(s);
 
 buildDrum();
 updateDrum();
-// set initial background without playing
 setBackground(tracks[queue[0]]);
 </script>
 </body>
