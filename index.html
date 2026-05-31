@@ -4,235 +4,302 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>playlist</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Space Grotesk',sans-serif}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
 
-  body {
-    background: #fff;
-    color: #1a1a1a;
-    font-family: 'Inter', -apple-system, sans-serif;
-    padding: 48px 56px 120px;
-    min-height: 100vh;
-  }
+/* ── background layers ── */
+.bg-layer{
+  position:fixed;inset:0;z-index:0;
+  background-size:cover;background-position:center;
+  filter:blur(60px) saturate(1.4) brightness(0.55);
+  transform:scale(1.15);
+  transition:opacity 0.9s ease;
+  will-change:opacity;
+}
+#bg-a{opacity:1}
+#bg-b{opacity:0}
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px 0;
-  }
+/* dark vignette so edges are always dark */
+.vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.55) 100%);
+}
 
-  .track {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.1s;
-    min-width: 0;
-  }
+/* ── drum ── */
+.drum-wrap{
+  position:relative;z-index:2;
+  width:100%;max-width:600px;
+  height:100vh;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
 
-  .track:hover { background: #f1f1f0; }
-  .track.active { background: #f1f1f0; }
+.drum-wrap::before,.drum-wrap::after{
+  content:'';position:absolute;left:0;right:0;height:36vh;z-index:3;pointer-events:none;
+}
 
-  .eq {
-    display: none;
-    align-items: flex-end;
-    gap: 1.5px;
-    height: 12px;
-    flex-shrink: 0;
-    width: 14px;
-  }
-  .track.playing .eq { display: flex; }
+.drum{
+  width:100%;padding:0 40px;
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;z-index:2;
+}
 
-  .eq-b {
-    width: 2.5px;
-    background: #1a1a1a;
-    border-radius: 1px;
-    animation: eq 0.7s ease-in-out infinite alternate;
-  }
-  .eq-b:nth-child(1) { height: 50%; animation-delay: 0s; }
-  .eq-b:nth-child(2) { height: 100%; animation-delay: 0.15s; }
-  .eq-b:nth-child(3) { height: 65%; animation-delay: 0.3s; }
+.track{
+  text-align:center;cursor:pointer;width:100%;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;
+  padding:8px 0;
+  transition:color 0.6s ease, text-shadow 0.6s ease;
+}
+.track .title{display:block}
+.track .artist{display:block}
 
-  @keyframes eq {
-    from { transform: scaleY(0.25); }
-    to { transform: scaleY(1); }
-  }
+.track[data-dist="0"]{padding:12px 0}
+.track[data-dist="0"] .title{font-size:28px;font-weight:600;letter-spacing:-0.02em;line-height:1.15}
+.track[data-dist="0"] .artist{font-size:12px;font-weight:300;letter-spacing:0.07em;text-transform:uppercase;margin-top:5px;opacity:0.6}
 
-  .track-text {
-    font-size: 14px;
-    color: #1a1a1a;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.4;
-  }
+.track[data-dist="1"]{padding:8px 0}
+.track[data-dist="1"] .title{font-size:17px;font-weight:400;letter-spacing:-0.01em;opacity:0.5}
+.track[data-dist="1"] .artist{font-size:10px;font-weight:300;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;opacity:0.25}
 
-  .track-text .name { font-weight: 500; }
-  .track-text .sep { color: #b0b0b0; margin: 0 4px; }
-  .track-text .artist { color: #888; font-weight: 400; }
+.track[data-dist="2"]{padding:6px 0}
+.track[data-dist="2"] .title{font-size:14px;font-weight:400;opacity:0.2}
+.track[data-dist="2"] .artist{font-size:9px;letter-spacing:0.05em;text-transform:uppercase;margin-top:1px;opacity:0.1}
 
-  /* PLAYER */
-  #bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid #e8e8e8;
-    height: 64px;
-    padding: 0 56px;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
-  }
-  #bar.on { transform: translateY(0); }
+.track[data-dist="3"]{padding:4px 0}
+.track[data-dist="3"] .title{font-size:12px;font-weight:300;opacity:0.07}
+.track[data-dist="3"] .artist{display:none}
 
-  #now {
-    font-size: 13px;
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: #1a1a1a;
-  }
-  #now .n { font-weight: 500; }
-  #now .a { color: #888; }
+.track[data-dist="4"]{padding:3px 0}
+.track[data-dist="4"] .title{font-size:11px;font-weight:300;opacity:0.03}
+.track[data-dist="4"] .artist{display:none}
 
-  .btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 13px;
-    color: #888;
-    padding: 6px 8px;
-    border-radius: 4px;
-    transition: color 0.1s, background 0.1s;
-    font-family: inherit;
-    line-height: 1;
-  }
-  .btn:hover { color: #1a1a1a; background: #f1f1f0; }
+/* text color: set via JS as CSS var */
+.drum{ --tc: #ffffff; color: var(--tc); }
 
-  #pp {
-    font-size: 15px;
-    color: #1a1a1a;
-    padding: 6px 10px;
-  }
+/* ── player bar ── */
+#bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:10;
+  display:flex;align-items:center;justify-content:center;gap:24px;
+  padding:14px 40px 24px;
+  background:linear-gradient(to top,rgba(0,0,0,0.5) 60%,transparent);
+}
 
-  .prog-wrap {
-    flex: 1;
-    max-width: 320px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
+.ctrl{
+  background:none;border:none;cursor:pointer;
+  font-size:11px;font-family:'Space Grotesk',sans-serif;
+  padding:6px;transition:opacity 0.15s;letter-spacing:0.05em;
+  opacity:0.4;
+}
+.ctrl:hover{opacity:0.85}
+#pp{font-size:13px;opacity:0.85}
+#shuf.on{opacity:0.85}
 
-  .prog-track {
-    height: 2px;
-    background: #e8e8e8;
-    border-radius: 999px;
-    cursor: pointer;
-    position: relative;
-  }
+/* bar inherits text color too */
+#bar{ color: var(--bar-tc, #fff); }
 
-  #prog-fill {
-    height: 100%;
-    background: #1a1a1a;
-    border-radius: 999px;
-    width: 0%;
-    pointer-events: none;
-    transition: width 0.4s linear;
-  }
+.prog-wrap{display:flex;align-items:center;gap:10px}
+.prog-track{
+  width:130px;height:1px;
+  border-radius:999px;cursor:pointer;position:relative;
+  background:rgba(128,128,128,0.3);
+}
+#prog-fill{
+  height:100%;border-radius:999px;width:0%;
+  pointer-events:none;transition:width 0.4s linear, background 0.6s ease;
+}
+.time{font-size:11px;font-weight:300;min-width:30px;letter-spacing:0.02em;opacity:0.35}
+#tc{text-align:right}
 
-  .times {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: #b0b0b0;
-    font-variant-numeric: tabular-nums;
-  }
+#yt-wrap{position:fixed;left:-9999px;bottom:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
 
-  #yt-wrap {
-    position: fixed;
-    left: -9999px; bottom: -9999px;
-    width: 1px; height: 1px;
-    opacity: 0; pointer-events: none;
-  }
+/* hidden canvas for color sampling */
+#sampleCanvas{display:none}
 </style>
 </head>
 <body>
+<div class="bg-layer" id="bg-a"></div>
+<div class="bg-layer" id="bg-b"></div>
+<div class="vignette"></div>
+<canvas id="sampleCanvas" width="20" height="20"></canvas>
 
 <div id="yt-wrap"><div id="yt-player"></div></div>
 
-<div class="grid" id="grid"></div>
+<div class="drum-wrap">
+  <div class="drum" id="drum"></div>
+</div>
 
 <div id="bar">
-  <div id="now"><span class="n"></span><span class="sep"> – </span><span class="a"></span></div>
-  <div style="display:flex;align-items:center;gap:4px">
-    <button class="btn" id="prev">◀◀</button>
-    <button class="btn" id="pp">▶</button>
-    <button class="btn" id="next">▶▶</button>
-  </div>
+  <button class="ctrl" id="prev">◀◀</button>
+  <button class="ctrl" id="pp">▶</button>
+  <button class="ctrl" id="next">▶▶</button>
   <div class="prog-wrap">
-    <div class="prog-track" id="prog-track">
-      <div id="prog-fill"></div>
-    </div>
-    <div class="times"><span id="tc">0:00</span><span id="td">0:00</span></div>
+    <span class="time" id="tc">0:00</span>
+    <div class="prog-track" id="prog-track"><div id="prog-fill"></div></div>
+    <span class="time" id="td">0:00</span>
   </div>
+  <button class="ctrl" id="shuf" title="Shuffle">⇄</button>
 </div>
 
 <script>
 const tracks = [
-  { title: "Redbone",                    artist: "Childish Gambino",              yt: "Kp7eSUU9oy8" },
-  { title: "Motion",                     artist: "Four Tet",                      yt: "u7K72X4eo_s" },
-  { title: "Never Catch Me",             artist: "Flying Lotus ft. Kendrick",     yt: "gOAa7bwbttI" },
-  { title: "Intro",                      artist: "The xx",                        yt: "qFq6nnw7xg0" },
-  { title: "Crystalised",               artist: "The xx",                        yt: "TD6dTGSVbHo" },
-  { title: "Holocene",                   artist: "Bon Iver",                      yt: "TWcyIpul8OE" },
-  { title: "Everything in Its Right Place", artist: "Radiohead",                  yt: "onRk0sjSgFU" },
-  { title: "An Ending (Ascent)",         artist: "Brian Eno",                     yt: "o2lGQwQKcKg" },
-  { title: "Comptine d'un autre été",    artist: "Yann Tiersen",                  yt: "H3v9unphfi0" },
-  { title: "Once in a Lifetime",         artist: "Talking Heads",                 yt: "98AJUj-qxHI" },
-  { title: "Electric Feel",             artist: "MGMT",                          yt: "MmZexg8sxyk" },
-  { title: "God's Plan",                 artist: "Drake",                         yt: "xpVfcZ0ZcFM" },
+  { title:"Redbone",                        artist:"Childish Gambino",  yt:"Kp7eSUU9oy8" },
+  { title:"Motion",                         artist:"Four Tet",          yt:"u7K72X4eo_s" },
+  { title:"Never Catch Me",                 artist:"Flying Lotus",      yt:"gOAa7bwbttI" },
+  { title:"Intro",                          artist:"The xx",            yt:"qFq6nnw7xg0" },
+  { title:"Crystalised",                    artist:"The xx",            yt:"TD6dTGSVbHo" },
+  { title:"Holocene",                       artist:"Bon Iver",          yt:"TWcyIpul8OE" },
+  { title:"Everything in Its Right Place",  artist:"Radiohead",         yt:"onRk0sjSgFU" },
+  { title:"An Ending (Ascent)",             artist:"Brian Eno",         yt:"o2lGQwQKcKg" },
+  { title:"Comptine d'un autre été",        artist:"Yann Tiersen",      yt:"H3v9unphfi0" },
+  { title:"Once in a Lifetime",             artist:"Talking Heads",     yt:"98AJUj-qxHI" },
+  { title:"Electric Feel",                  artist:"MGMT",              yt:"MmZexg8sxyk" },
+  { title:"God's Plan",                     artist:"Drake",             yt:"xpVfcZ0ZcFM" },
 ];
 
-let cur = -1, playing = false, yt = null, ytOk = false, timer = null;
+const WINDOW = 4;
+let cur = 0, playing = false, shuffleOn = false;
+let queue = tracks.map((_,i)=>i);
+let yt = null, ytOk = false, timer = null;
+let bgActive = 'a'; // which bg layer is on top
 
-function render() {
-  const g = document.getElementById('grid');
-  g.innerHTML = '';
-  tracks.forEach((t, i) => {
-    const d = document.createElement('div');
-    d.className = 'track' + (i === cur ? (playing ? ' active playing' : ' active') : '');
-    d.dataset.i = i;
-    d.innerHTML = `
-      <div class="eq"><div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div></div>
-      <div class="track-text">
-        <span class="name">${t.title}</span><span class="sep"> – </span><span class="artist">${t.artist}</span>
-      </div>`;
-    d.onclick = () => play(i);
-    g.appendChild(d);
+/* ── background crossfade + color detection ── */
+function thumbUrl(ytId) {
+  return `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`;
+}
+function thumbFallback(ytId) {
+  return `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+}
+
+function getLuminance(r,g,b){
+  // perceived luminance
+  return (0.299*r + 0.587*g + 0.114*b) / 255;
+}
+
+function sampleImageColor(url, cb) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    try {
+      const canvas = document.getElementById('sampleCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 20, 20);
+      const data = ctx.getImageData(0, 0, 20, 20).data;
+      let r=0,g=0,b=0,count=0;
+      for(let i=0;i<data.length;i+=4){
+        r+=data[i]; g+=data[i+1]; b+=data[i+2]; count++;
+      }
+      r=r/count; g=g/count; b=b/count;
+      const lum = getLuminance(r,g,b);
+      cb(lum);
+    } catch(e) { cb(0.15); } // fallback: assume dark
+  };
+  img.onerror = () => cb(0.15);
+  img.src = url;
+}
+
+function setBackground(track) {
+  const next = bgActive === 'a' ? 'b' : 'a';
+  const layerNext = document.getElementById('bg-'+next);
+  const layerCur  = document.getElementById('bg-'+bgActive);
+
+  const url = thumbUrl(track.yt);
+  const fallback = thumbFallback(track.yt);
+
+  // preload, fallback to hqdefault if maxres 404
+  const img = new Image();
+  img.onload = () => {
+    layerNext.style.backgroundImage = `url('${img.src}')`;
+    layerNext.style.opacity = '1';
+    layerCur.style.opacity = '0';
+    bgActive = next;
+  };
+  img.onerror = () => {
+    layerNext.style.backgroundImage = `url('${fallback}')`;
+    layerNext.style.opacity = '1';
+    layerCur.style.opacity = '0';
+    bgActive = next;
+  };
+  img.src = url;
+
+  // sample color to decide text color
+  sampleImageColor(fallback, (lum) => {
+    // after blur+darken (brightness 0.55), effective lum is lower
+    const effective = lum * 0.55;
+    let textColor, fillColor;
+    if (effective < 0.28) {
+      // dark bg → light text
+      textColor = '#ffffff';
+      fillColor = 'rgba(255,255,255,0.65)';
+    } else {
+      // light bg → dark text
+      textColor = '#111111';
+      fillColor = 'rgba(0,0,0,0.65)';
+    }
+    document.getElementById('drum').style.setProperty('--tc', textColor);
+    document.getElementById('bar').style.setProperty('--bar-tc', textColor);
+    document.getElementById('prog-fill').style.background = fillColor;
+
+    // update fade overlays direction
+    const isDark = effective < 0.28;
+    const fadeColor = isDark ? '#000000' : '#e8e4dc';
+    const before = document.querySelector('.drum-wrap::before');
+    // can't update pseudo-elements directly, use CSS vars instead
+    document.documentElement.style.setProperty('--fade-color', isDark ? 'rgba(0,0,0,' : 'rgba(232,228,220,');
   });
 }
 
-function play(i) {
-  cur = i; playing = true;
-  render();
-  const t = tracks[i];
-  document.querySelector('#now .n').textContent = t.title;
-  document.querySelector('#now .a').textContent = t.artist;
-  document.getElementById('bar').classList.add('on');
+/* ── drum DOM ── */
+function buildDrum() {
+  const drum = document.getElementById('drum');
+  drum.innerHTML = '';
+  for (let i = 0; i < WINDOW*2+1; i++) {
+    const div = document.createElement('div');
+    div.className = 'track';
+    div.innerHTML = '<span class="title"></span><span class="artist"></span>';
+    div.addEventListener('click', () => {
+      const offset = parseInt(div.dataset.offset);
+      if (!isNaN(offset) && offset !== 0) {
+        const newPos = cur + offset;
+        if (newPos >= 0 && newPos < queue.length) { cur = newPos; play(); }
+      }
+    });
+    drum.appendChild(div);
+  }
+}
+
+function updateDrum() {
+  const nodes = document.getElementById('drum').children;
+  for (let i = 0; i < nodes.length; i++) {
+    const offset = i - WINDOW;
+    const qPos = cur + offset;
+    const el = nodes[i];
+    el.dataset.offset = offset;
+    el.dataset.dist = Math.min(Math.abs(offset), 4);
+    if (qPos < 0 || qPos >= queue.length) {
+      el.querySelector('.title').textContent = '';
+      el.querySelector('.artist').textContent = '';
+      el.style.pointerEvents = 'none';
+    } else {
+      const t = tracks[queue[qPos]];
+      el.querySelector('.title').textContent = t.title;
+      el.querySelector('.artist').textContent = t.artist;
+      el.style.pointerEvents = offset === 0 ? 'none' : 'auto';
+    }
+  }
+}
+
+/* ── playback ── */
+function play() {
+  playing = true;
+  updateDrum();
+  setBackground(tracks[queue[cur]]);
   document.getElementById('pp').textContent = '⏸';
   document.getElementById('prog-fill').style.width = '0%';
   document.getElementById('tc').textContent = '0:00';
   document.getElementById('td').textContent = '0:00';
-  if (ytOk) { yt.loadVideoById(t.yt); yt.playVideo(); }
+  if (ytOk) { yt.loadVideoById(tracks[queue[cur]].yt); yt.playVideo(); }
   if (timer) clearInterval(timer);
   timer = setInterval(tick, 500);
 }
@@ -242,57 +309,88 @@ function tick() {
   try {
     const d = yt.getDuration(), c = yt.getCurrentTime();
     if (d > 0) {
-      document.getElementById('prog-fill').style.width = (c/d*100) + '%';
+      document.getElementById('prog-fill').style.width = (c/d*100)+'%';
       document.getElementById('tc').textContent = fmt(c);
       document.getElementById('td').textContent = fmt(d);
     }
   } catch(e) {}
 }
 
-function fmt(s) {
-  return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
-}
+function fmt(s){ return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); }
+function goNext(){ if(cur<queue.length-1){cur++;play();} }
+function goPrev(){ if(cur>0){cur--;play();} }
 
-document.getElementById('pp').onclick = () => {
-  if (!ytOk || cur < 0) return;
-  if (playing) {
-    yt.pauseVideo(); playing = false;
-    document.getElementById('pp').textContent = '▶';
-    document.querySelectorAll('.track.playing').forEach(el => el.classList.remove('playing'));
+document.getElementById('pp').addEventListener('click', () => {
+  if (!ytOk) return;
+  if (playing) { yt.pauseVideo(); playing=false; document.getElementById('pp').textContent='▶'; }
+  else { yt.playVideo(); playing=true; document.getElementById('pp').textContent='⏸'; if(!timer)timer=setInterval(tick,500); }
+});
+document.getElementById('prev').addEventListener('click', goPrev);
+document.getElementById('next').addEventListener('click', goNext);
+
+document.getElementById('shuf').addEventListener('click', () => {
+  shuffleOn = !shuffleOn;
+  document.getElementById('shuf').classList.toggle('on', shuffleOn);
+  const ci = queue[cur];
+  if (shuffleOn) {
+    const rest = tracks.map((_,i)=>i).filter(i=>i!==ci);
+    for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
+    queue=[ci,...rest]; cur=0;
   } else {
-    yt.playVideo(); playing = true;
-    document.getElementById('pp').textContent = '⏸';
-    document.querySelectorAll('.track[data-i="'+cur+'"]').forEach(el => el.classList.add('playing'));
+    queue=tracks.map((_,i)=>i); cur=queue.indexOf(ci);
   }
-};
+  updateDrum();
+});
 
-document.getElementById('prev').onclick = () => { if (cur > 0) play(cur-1); };
-document.getElementById('next').onclick = () => { if (cur < tracks.length-1) play(cur+1); };
+document.getElementById('prog-track').addEventListener('click', (e) => {
+  if(!ytOk)return;
+  const r=e.currentTarget.getBoundingClientRect();
+  yt.seekTo(yt.getDuration()*(e.clientX-r.left)/r.width,true);
+});
 
-document.getElementById('prog-track').onclick = (e) => {
-  if (!ytOk || cur < 0) return;
-  const r = e.currentTarget.getBoundingClientRect();
-  yt.seekTo(yt.getDuration() * (e.clientX - r.left) / r.width, true);
-};
+/* ── scroll ── */
+let wb=0,wraf=null;
+window.addEventListener('wheel',(e)=>{
+  e.preventDefault(); wb+=e.deltaY;
+  if(wraf)return;
+  wraf=requestAnimationFrame(function d(){
+    if(Math.abs(wb)>=50){
+      if(wb>0&&cur<queue.length-1){cur++;play();}
+      else if(wb<0&&cur>0){cur--;play();}
+      wb=0;
+    }
+    wraf=Math.abs(wb)>=50?requestAnimationFrame(d):null;
+  });
+},{passive:false});
 
-window.onYouTubeIframeAPIReady = () => {
-  yt = new YT.Player('yt-player', {
-    height: '1', width: '1', videoId: '',
-    playerVars: { autoplay: 0, controls: 0 },
-    events: {
-      onReady: () => { ytOk = true; },
-      onStateChange: (e) => {
-        if (e.data === YT.PlayerState.ENDED && cur < tracks.length-1) play(cur+1);
-      }
+let ty=null;
+window.addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:true});
+window.addEventListener('touchend',e=>{
+  if(ty===null)return;
+  const dy=ty-e.changedTouches[0].clientY;
+  if(Math.abs(dy)>40){dy>0?goNext():goPrev();}
+  ty=null;
+});
+
+window.onYouTubeIframeAPIReady=()=>{
+  yt=new YT.Player('yt-player',{
+    height:'1',width:'1',videoId:'',
+    playerVars:{autoplay:0,controls:0},
+    events:{
+      onReady:()=>{ytOk=true;},
+      onStateChange:(e)=>{if(e.data===YT.PlayerState.ENDED)goNext();}
     }
   });
 };
 
-const s = document.createElement('script');
-s.src = 'https://www.youtube.com/iframe_api';
+const s=document.createElement('script');
+s.src='https://www.youtube.com/iframe_api';
 document.head.appendChild(s);
 
-render();
+buildDrum();
+updateDrum();
+// set initial background without playing
+setBackground(tracks[queue[0]]);
 </script>
 </body>
 </html>
