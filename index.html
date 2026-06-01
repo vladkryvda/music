@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Playlist from Google Sheets</title>
+<title>Space Player</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -75,20 +75,26 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 .time{font-size:clamp(9.5px,2.2vw,11px);font-weight:300;color:rgba(255,255,255,0.3);min-width:0;letter-spacing:0.01em;flex-shrink:0}
 #tc{text-align:right}
 
-/* ── add track panel ── */
+/* ── Покращена адмін панель (над меню плеєра) ── */
 #add-panel{
-  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:20;
-  display:none;flex-direction:column;gap:10px;padding:16px 18px;border-radius:18px;
-  background:rgba(15,15,15,0.82);backdrop-filter:blur(40px) saturate(1.8);-webkit-backdrop-filter:blur(40px) saturate(1.8);
-  border:1px solid rgba(255,255,255,0.11);box-shadow:0 8px 40px rgba(0,0,0,0.55);width:calc(100vw - 32px);max-width:380px;
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);z-index:20;
+  display:flex;flex-direction:column;gap:10px;padding:16px 18px;border-radius:18px;
+  background:rgba(20,20,20,0.75);backdrop-filter:blur(40px) saturate(1.8);-webkit-backdrop-filter:blur(40px) saturate(1.8);
+  border:1px solid rgba(255,255,255,0.08);box-shadow:0 20px 50px rgba(0,0,0,0.6);
+  width:calc(100vw - 32px);max-width:400px;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.25s ease, transform 0.25s ease;
 }
-#add-panel.open{display:flex}
-#add-panel label{font-size:10px;font-weight:500;color:rgba(255,255,255,0.38);letter-spacing:0.08em;text-transform:uppercase}
+#add-panel.open{
+  opacity:1;pointer-events:auto;
+  transform:translateX(-50%) translateY(0);
+}
+#add-panel label{font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.08em;text-transform:uppercase}
 #url-input{
-  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;
-  color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;padding:9px 12px;outline:none;width:100%;transition:border-color 0.15s;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;
+  color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;padding:10px 14px;outline:none;width:100%;transition:border-color 0.15s;
 }
-#url-input:focus{border-color:rgba(255,255,255,0.3)}
+#url-input:focus{border-color:rgba(255,255,255,0.25)}
 #url-input::placeholder{color:rgba(255,255,255,0.2)}
 #yt-wrap{position:fixed;left:-9999px;bottom:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
 </style>
@@ -104,13 +110,13 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <div id="yt-wrap"><div id="yt-player"></div></div>
 
 <div id="add-panel">
-  <label id="input-label">Додати новий трек (Enter)</label>
-  <input type="text" id="url-input" placeholder="Встав посилання на YouTube і натисни Enter">
+  <label id="input-label">Додати новий трек (M)</label>
+  <input type="text" id="url-input" placeholder="Встав лінку на YouTube та натисни Enter">
 </div>
 
 <div class="drum-wrap">
   <div class="drum" id="drum">
-    <div style="color: #fff; font-size: 14px;">Завантаження плейлиста...</div>
+    <div style="color: rgba(255,255,255,0.5); font-size: 14px;">Ініціалізація...</div>
   </div>
 </div>
 
@@ -127,9 +133,9 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 </div>
 
 <script>
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTcXHD4X8uDWvbV9Q68yAvliNDG4GdEmMyEE09kA8bMtDcrXIFwS_N3qqeCIaK8YTynQXN3pGdQC1Ya/pub?output=csv';
-// ВСТАВ СЮДИ URL ВЕБ-ДОДАТКУ APPS SCRIPT, ЯКИЙ СКОПІЮВАВ У КРОЦІ 1
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzeYYb26x-KKUt-hVauGyMrx1IzlCnpJoCAmDF88sInusxzknXNpwmOUOub78XoHJZhnQ/exec'; 
+// ── НАЛАШТУВАННЯ ЛІНКІВ ──
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6DmOMoxZgViN6u3mrjqKQkdrWXD4O2G9C7hxvbvuv6M3j9rg0M5687QFrIaAN4415UEYhvKkWmRMe/pub?output=csv';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyB8zy3-c5q8g2EwwcHa4K95idxDnjuE2GA16PZGsEoKc7nROzzP_l3xjuVX65TvVVI/exec'; 
 
 let tracks = [];
 const WINDOW = 4;
@@ -137,6 +143,22 @@ let cur = 0, playing = false, shuffleOn = false;
 let queue = [];
 let yt = null, ytOk = false, timer = null;
 let bgActive = 'a';
+
+// Миттєве завантаження локального кешу, щоб уникнути затримки екрану
+(function preLoadCache() {
+  const cached = localStorage.getItem('music_playlist_cache');
+  if (cached) {
+    try {
+      tracks = JSON.parse(cached);
+      queue = tracks.map((_, i) => i);
+      document.addEventListener("DOMContentLoaded", () => {
+        buildDrum();
+        updateDrum();
+        setBackground(tracks[queue[0]]);
+      });
+    } catch(e) { localStorage.removeItem('music_playlist_cache'); }
+  }
+})();
 
 // ── Grain noise ──
 (function initGrain(){
@@ -152,14 +174,13 @@ let bgActive = 'a';
   drawGrain();
 })();
 
-// ── Fullscreen on Double Click ──
+// Double Click Fullscreen
 document.addEventListener('dblclick', (e) => {
-  if(e.target.closest('#bar') || e.target.closest('#add-panel')) return;
+  if(e.target.closest('#bar') || e.target.closest('#add-panel') || e.target.tagName === 'INPUT') return;
   if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); } 
   else { document.exitFullscreen(); }
 });
 
-// ── Parse CSV rows helper ──
 function parseRows(data) {
   const rows = data.split('\n').slice(1);
   return rows.map(row => {
@@ -175,25 +196,33 @@ function parseRows(data) {
   }).filter(t => t && t.yt && t.yt !== "#N/A" && t.yt !== "Loading...");
 }
 
-// ── Load Tracks ──
+// Завантаження треків у фоновому режимі
 async function loadTracks() {
-  const cached = localStorage.getItem('music_playlist_cache');
-  if (cached) { try { tracks = JSON.parse(cached); initPlaylistState(); } catch(e) { localStorage.removeItem('music_playlist_cache'); } }
   try {
-    const response = await fetch(SHEET_CSV_URL); const data = await response.text(); const freshTracks = parseRows(data);
-    if (freshTracks.length === 0) throw new Error("No tracks found");
+    const response = await fetch(SHEET_CSV_URL); 
+    const data = await response.text(); 
+    const freshTracks = parseRows(data);
+    
+    if (freshTracks.length === 0) throw new Error();
+    
     if (JSON.stringify(freshTracks) !== JSON.stringify(tracks)) {
-      tracks = freshTracks; localStorage.setItem('music_playlist_cache', JSON.stringify(tracks));
       const currentTrackId = tracks[queue[cur]] ? tracks[queue[cur]].yt : null;
+      tracks = freshTracks; 
+      localStorage.setItem('music_playlist_cache', JSON.stringify(tracks));
+      
       queue = tracks.map((_, i) => i);
       if (shuffleOn) { applyShuffle(currentTrackId); }
       else if (currentTrackId) { cur = tracks.findIndex(t => t.yt === currentTrackId) || 0; }
+      if(cur < 0) cur = 0;
+      
       buildDrum(); updateDrum(); setBackground(tracks[queue[cur]]); updateMediaSession();
     }
-  } catch (e) { if (tracks.length === 0) { document.getElementById('drum').innerHTML = '<div style="color:red">Помилка завантаження! Перевір посилання.</div>'; } }
+  } catch (e) { 
+    if (tracks.length === 0) { 
+      document.getElementById('drum').innerHTML = '<div style="color:red; font-size:14px;">Помилка плейлиста. Додайте треки у таблицю!</div>'; 
+    } 
+  }
 }
-
-function initPlaylistState() { queue = tracks.map((_, i) => i); buildDrum(); updateDrum(); setBackground(tracks[queue[0]]); }
 
 // ── background ──
 function setBackground(track) {
@@ -205,173 +234,4 @@ function setBackground(track) {
     else { layerNext.style.backgroundImage = 'none'; layerNext.className = 'bg-layer netflix-fallback'; switchLayers(layerNext, layerCur, next); }
   }
   img.onerror = triggerFallback;
-  img.onload = () => {
-    if (img.naturalWidth === 120 && img.naturalHeight === 90) { triggerFallback(); return; }
-    layerNext.className = 'bg-layer'; layerNext.style.backgroundImage = `url('${img.src}')`; switchLayers(layerNext, layerCur, next);
-  };
-  img.src = `https://i.ytimg.com/vi/${track.yt}/maxresdefault.jpg`;
-}
-function switchLayers(layerNext, layerCur, next) { requestAnimationFrame(() => { layerNext.style.opacity = '1'; layerCur.style.opacity = '0'; bgActive = next; }); }
-
-// ── Media Session API ──
-function updateMediaSession() {
-  if ('mediaSession' in navigator && tracks[queue[cur]]) {
-    const t = tracks[queue[cur]];
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: t.title, artist: t.artist, album: 'My Space Player',
-      artwork: [{ src: `https://i.ytimg.com/vi/${t.yt}/maxresdefault.jpg`, sizes: '1280x720', type: 'image/jpeg' }]
-    });
-    navigator.mediaSession.setActionHandler('play', () => { togglePlayback(true); });
-    navigator.mediaSession.setActionHandler('pause', () => { togglePlayback(false); });
-    navigator.mediaSession.setActionHandler('previoustrack', goPrev);
-    navigator.mediaSession.setActionHandler('nexttrack', goNext);
-  }
-}
-
-// ── drum ──
-function buildDrum() {
-  const drum = document.getElementById('drum'); drum.innerHTML = '';
-  for (let i = 0; i < WINDOW*2+1; i++) {
-    const div = document.createElement('div'); div.className = 'track'; div.innerHTML = '<span class="title"></span><span class="artist"></span>';
-    div.addEventListener('click', () => {
-      const offset = parseInt(div.dataset.offset);
-      if (!isNaN(offset) && offset !== 0) { const np = cur + offset; if (np >= 0 && np < queue.length) { cur = np; play(); } }
-    });
-    drum.appendChild(div);
-  }
-}
-
-function updateDrum() {
-  const nodes = document.getElementById('drum').children; if (!nodes.length || !tracks[queue[cur]]) return;
-  for (let i = 0; i < nodes.length; i++) {
-    const offset = i - WINDOW, qPos = cur + offset, el = nodes[i]; el.dataset.offset = offset; el.dataset.dist = Math.min(Math.abs(offset), 4);
-    if (qPos < 0 || qPos >= queue.length) { el.querySelector('.title').textContent = ''; el.querySelector('.artist').textContent = ''; el.style.pointerEvents = 'none'; } 
-    else {
-      const t = tracks[queue[qPos]]; el.querySelector('.title').textContent = t.title; el.querySelector('.artist').textContent = t.artist;
-      el.style.pointerEvents = offset === 0 ? 'none' : 'auto';
-    }
-  }
-  document.title = `${tracks[queue[cur]].title} — ${tracks[queue[cur]].artist}`;
-}
-
-function animateDrum(cb) {
-  const center = document.getElementById('drum').children[WINDOW]; if (!center) { cb(); return; }
-  center.classList.add('animating'); setTimeout(() => { cb(); requestAnimationFrame(() => center.classList.remove('animating')); }, 200);
-}
-
-// ── playback ──
-const ppIcon = document.getElementById('pp-icon');
-function play() {
-  playing = true; animateDrum(() => updateDrum()); setBackground(tracks[queue[cur]]);
-  ppIcon.querySelector('path').setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
-  if (ytOk) { yt.loadVideoById(tracks[queue[cur]].yt); yt.playVideo(); }
-  if (timer) clearInterval(timer); timer = setInterval(tick, 500); updateMediaSession();
-}
-
-function togglePlayback(shouldPlay) {
-  if (!ytOk) return; playing = shouldPlay !== undefined ? shouldPlay : !playing;
-  if (playing) { yt.playVideo(); ppIcon.querySelector('path').setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z'); } 
-  else { yt.pauseVideo(); ppIcon.querySelector('path').setAttribute('d', 'M8 5v14l11-7z'); }
-}
-
-function tick() {
-  if (!ytOk || !yt.getDuration) return; const d = yt.getDuration(), c = yt.getCurrentTime();
-  if (d > 0) { document.getElementById('prog-fill').style.width = (c/d*100)+'%'; document.getElementById('tc').textContent = fmt(c); document.getElementById('td').textContent = fmt(d); }
-}
-function fmt(s){ return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); }
-function goNext(){ if(cur<queue.length-1){cur++;play();} }
-function goPrev(){ if(cur>0){cur--;play();} }
-
-document.getElementById('pp').addEventListener('click', () => togglePlayback());
-document.getElementById('next').addEventListener('click', goNext);
-document.getElementById('prev').addEventListener('click', goPrev);
-
-function applyShuffle(currentTrackId) {
-  const ci = currentTrackId ? tracks.findIndex(t => t.yt === currentTrackId) : queue[cur];
-  let rest = tracks.map((_,i)=>i).filter(i=>i!==ci);
-  for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
-  queue=[ci,...rest]; cur=0;
-}
-
-document.getElementById('shuf').addEventListener('click', () => {
-  shuffleOn = !shuffleOn; document.getElementById('shuf').classList.toggle('on', shuffleOn); const ci = queue[cur];
-  if (shuffleOn) { applyShuffle(tracks[ci]?.yt); } else { queue=tracks.map((_,i)=>i); cur=queue.indexOf(ci); }
-  updateDrum();
-});
-
-document.getElementById('prog-track').addEventListener('click', (e) => {
-  if(!ytOk)return; const r=e.currentTarget.getBoundingClientRect(); yt.seekTo(yt.getDuration()*(e.clientX-r.left)/r.width,true);
-});
-
-// ── YouTube API ──
-window.onYouTubeIframeAPIReady = () => {
-  yt = new YT.Player('yt-player', {
-    height:'1', width:'1', videoId:'', playerVars:{ autoplay:0, controls:0 },
-    events:{ onReady: () => { ytOk = true; loadTracks(); }, onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) goNext(); } }
-  });
-};
-const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(tag);
-
-// ── Додавання треку через URL інпут ──
-const urlInput = document.getElementById('url-input');
-const inputLabel = document.getElementById('input-label');
-
-urlInput.addEventListener('keydown', async (e) => {
-  if (e.key === 'Enter') {
-    const url = urlInput.value.trim();
-    if (!url) return;
-    
-    inputLabel.textContent = "Надсилання й обробка...";
-    urlInput.disabled = true;
-    
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ url: url })
-      });
-      const result = await response.json();
-      
-      if (result.status === 'success') {
-        inputLabel.textContent = "Успішно додано!";
-        urlInput.value = '';
-        
-        // МИТТЄВО додаємо трек у локальну бібліотеку сайту без запитів до мережі
-        tracks.push(result.track);
-        localStorage.setItem('music_playlist_cache', JSON.stringify(tracks));
-        
-        // Якщо це був перший трек
-        if (tracks.length === 1) {
-          initPlaylistState();
-        } else {
-          // Оновлюємо чергу треків
-          const currentTrackId = tracks[queue[cur]] ? tracks[queue[cur]].yt : null;
-          queue = tracks.map((_, i) => i);
-          if (shuffleOn) { applyShuffle(currentTrackId); }
-          else if (currentTrackId) { cur = tracks.findIndex(t => t.yt === currentTrackId) || 0; }
-          
-          buildDrum();
-          updateDrum();
-        }
-      } else {
-        inputLabel.textContent = "Помилка: " + (result.message || "невідома");
-      }
-    } catch (err) {
-      inputLabel.textContent = "Помилка мережі/налаштувань Apps Script!";
-    }
-    
-    urlInput.disabled = false;
-    setTimeout(() => { inputLabel.textContent = "Додати новий трек (Enter)"; }, 3000);
-  }
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT') return; // Не перемикаємо панель, якщо пишемо в інпуті
-  if (e.key === 'a' || e.key === 'A') {
-    const panel = document.getElementById('add-panel');
-    panel.classList.toggle('open');
-    if (panel.classList.contains('open')) urlInput.focus();
-  }
-});
-</script>
-</body>
-</html>
+  img.onload
