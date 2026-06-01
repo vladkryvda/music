@@ -50,7 +50,9 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 /* ── player bar ── */
 #bar{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;
-  display:flex;align-items:center;gap:16px;padding:12px 20px;border-radius:20px;
+  display:flex;align-items:center;gap:clamp(8px,2.5vw,16px);
+  padding:clamp(9px,2vw,12px) clamp(12px,3vw,20px);
+  border-radius:20px;
   background:rgba(255,255,255,0.08);
   backdrop-filter:blur(32px) saturate(1.8);
   -webkit-backdrop-filter:blur(32px) saturate(1.8);
@@ -64,20 +66,21 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 .ctrl{
   background:none;border:none;cursor:pointer;
   color:rgba(255,255,255,0.4);
-  padding:4px 5px;transition:color 0.15s;
+  padding:clamp(2px,1vw,4px) clamp(3px,1vw,5px);
+  transition:color 0.15s;
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;
 }
 .ctrl:hover{color:rgba(255,255,255,0.85)}
-.ctrl svg{display:block;width:14px;height:14px;fill:currentColor}
-#pp svg{width:16px;height:16px}
+.ctrl svg{display:block;width:clamp(11px,3.5vw,14px);height:clamp(11px,3.5vw,14px);fill:currentColor}
+#pp svg{width:clamp(13px,4vw,16px);height:clamp(13px,4vw,16px)}
 #pp{color:rgba(255,255,255,0.9)}
 #shuf.on{color:rgba(255,255,255,0.9)}
 
-.prog-wrap{display:flex;align-items:center;gap:8px;flex:1;min-width:80px}
-.prog-track{flex:1;height:2px;background:rgba(255,255,255,0.15);border-radius:999px;cursor:pointer;position:relative;min-width:60px}
+.prog-wrap{display:flex;align-items:center;gap:clamp(5px,1.5vw,8px);flex:1;min-width:0}
+.prog-track{flex:1;height:2px;background:rgba(255,255,255,0.15);border-radius:999px;cursor:pointer;position:relative;min-width:40px}
 #prog-fill{height:100%;background:rgba(255,255,255,0.75);border-radius:999px;width:0%;pointer-events:none;transition:width 0.4s linear}
-.time{font-size:10px;font-weight:300;color:rgba(255,255,255,0.3);min-width:26px;letter-spacing:0.02em;flex-shrink:0}
+.time{font-size:clamp(9px,2.5vw,10px);font-weight:300;color:rgba(255,255,255,0.3);min-width:0;letter-spacing:0.01em;flex-shrink:0}
 #tc{text-align:right}
 
 /* ── add track panel ── */
@@ -190,11 +193,6 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
   <!-- shuffle -->
   <button class="ctrl" id="shuf" title="Shuffle">
     <svg viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
-  </button>
-
-  <!-- add track -->
-  <button class="ctrl" id="add-btn" title="Додати трек (A)">
-    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
   </button>
 </div>
 
@@ -382,8 +380,6 @@ function togglePanel() {
     setTimeout(()=>urlInput.focus(),50);
   }
 }
-
-document.getElementById('add-btn').addEventListener('click', (e) => { e.stopPropagation(); togglePanel(); });
 
 window.addEventListener('keydown', (e) => {
   if ((e.key==='a'||e.key==='A') && e.target.tagName!=='INPUT') togglePanel();
