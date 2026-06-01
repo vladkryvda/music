@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>playlist</title>
+<title>Playlist from Google Sheets</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -50,7 +50,6 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
   display:flex;flex-direction:column;align-items:center;color:#fff;
 }
 
-/* each track fades in/out on change */
 .track{
   text-align:center;cursor:pointer;width:100%;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;
@@ -61,7 +60,6 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
   transition:opacity 0.35s ease, transform 0.35s ease;
 }
 
-/* animate class toggled by JS */
 .track.animating .title,
 .track.animating .artist{
   opacity:0;
@@ -147,31 +145,6 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
   padding:9px 12px;outline:none;width:100%;transition:border-color 0.15s;
 }
 #url-input::placeholder{color:rgba(255,255,255,0.2)}
-#url-input:focus{border-color:rgba(255,255,255,0.28)}
-.add-row{display:flex;gap:8px;align-items:center}
-#fetch-btn{
-  flex-shrink:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.13);
-  border-radius:8px;color:rgba(255,255,255,0.8);font-family:'Space Grotesk',sans-serif;
-  font-size:12px;font-weight:500;padding:9px 14px;cursor:pointer;transition:background 0.15s;
-}
-#fetch-btn:hover{background:rgba(255,255,255,0.17);color:#fff}
-#status{font-size:11px;color:rgba(255,255,255,0.32);min-height:14px}
-#code-box{display:none;flex-direction:column;gap:6px}
-#code-box.show{display:flex}
-#code-out{
-  font-family:'Space Mono',monospace,sans-serif;font-size:11px;line-height:1.5;
-  background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.07);
-  border-radius:8px;padding:10px 12px;color:#a8f0a8;
-  word-break:break-all;white-space:pre-wrap;user-select:all;
-}
-#copy-btn{
-  align-self:flex-end;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
-  border-radius:7px;color:rgba(255,255,255,0.5);font-family:'Space Grotesk',sans-serif;
-  font-size:11px;padding:5px 12px;cursor:pointer;transition:all 0.15s;
-}
-#copy-btn:hover{background:rgba(255,255,255,0.13);color:#fff}
-#copy-btn.copied{color:#a8f0a8;border-color:rgba(168,240,168,0.25)}
-
 #yt-wrap{position:fixed;left:-9999px;bottom:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
 </style>
 </head>
@@ -186,20 +159,16 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <div id="yt-wrap"><div id="yt-player"></div></div>
 
 <div id="add-panel">
-  <label>Додати трек</label>
-  <div class="add-row">
-    <input id="url-input" type="text" placeholder="https://youtube.com/watch?v=...">
-    <button id="fetch-btn">→ OK</button>
-  </div>
-  <div id="status"></div>
-  <div id="code-box">
-    <pre id="code-out"></pre>
-    <button id="copy-btn">Копіювати</button>
+  <label>Інструкція</label>
+  <div style="color:rgba(255,255,255,0.6); font-size: 13px; line-height: 1.4;">
+    Просто встав посилання на YouTube у свою Google таблицю (колонка A), і пісня з'явиться тут після оновлення сторінки.
   </div>
 </div>
 
 <div class="drum-wrap">
-  <div class="drum" id="drum"></div>
+  <div class="drum" id="drum">
+    <div style="color: #fff; font-size: 14px;">Завантаження плейлиста...</div>
+  </div>
 </div>
 
 <div id="bar">
@@ -223,109 +192,78 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 </div>
 
 <script>
-const tracks = [
-  { title:"Redbone",                        artist:"Childish Gambino",  yt:"Kp7eSUU9oy8" },
-  { title:"Motion",                         artist:"Four Tet",          yt:"u7K72X4eo_s" },
-  { title:"Never Catch Me",                 artist:"Flying Lotus",      yt:"gOAa7bwbttI" },
-  { title:"Intro",                          artist:"The xx",            yt:"qFq6nnw7xg0" },
-  { title:"Crystalised",                    artist:"The xx",            yt:"TD6dTGSVbHo" },
-  { title:"Holocene",                       artist:"Bon Iver",          yt:"TWcyIpul8OE" },
-  { title:"Everything in Its Right Place",  artist:"Radiohead",         yt:"onRk0sjSgFU" },
-  { title:"An Ending (Ascent)",             artist:"Brian Eno",         yt:"o2lGQwQKcKg" },
-  { title:"Comptine d'un autre été",        artist:"Yann Tiersen",      yt:"H3v9unphfi0" },
-  { title:"Once in a Lifetime",             artist:"Talking Heads",     yt:"98AJUj-qxHI" },
-  { title:"Electric Feel",                  artist:"MGMT",              yt:"MmZexg8sxyk" },
-  { title:"God's Plan",                     artist:"Drake",             yt:"xpVfcZ0ZcFM" },
-];
+// ТУТ ВСТАВ СВОЄ ПОСИЛАННЯ (CSV)
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTcXHD4X8uDWvbV9Q68yAvliNDG4GdEmMyEE09kA8bMtDcrXIFwS_N3qqeCIaK8YTynQXN3pGdQC1Ya/pub?output=csv';
 
+let tracks = [];
 const WINDOW = 4;
 let cur = 0, playing = false, shuffleOn = false;
-let queue = tracks.map((_,i)=>i);
+let queue = [];
 let yt = null, ytOk = false, timer = null;
 let bgActive = 'a';
 
-/* ── grain noise ── */
+// ── Grain noise ──
 (function initGrain(){
   const canvas = document.getElementById('grain');
   const ctx = canvas.getContext('2d');
   let w, h, frame = 0;
-
-  function resize(){
-    w = canvas.width  = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
+  function resize(){ w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
   function drawGrain(){
-    frame++;
-    // redraw noise every 3 frames so it feels organic but not too heavy
-    if (frame % 3 !== 0) { requestAnimationFrame(drawGrain); return; }
-    const imgd = ctx.createImageData(w, h);
-    const data = imgd.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const v = Math.random() * 255 | 0;
-      data[i] = data[i+1] = data[i+2] = v;
-      data[i+3] = 255;
-    }
-    ctx.putImageData(imgd, 0, 0);
-    requestAnimationFrame(drawGrain);
+    frame++; if (frame % 3 !== 0) { requestAnimationFrame(drawGrain); return; }
+    const imgd = ctx.createImageData(w, h); const data = imgd.data;
+    for (let i = 0; i < data.length; i += 4) { const v = Math.random() * 255 | 0; data[i] = data[i+1] = data[i+2] = v; data[i+3] = 255; }
+    ctx.putImageData(imgd, 0, 0); requestAnimationFrame(drawGrain);
   }
   drawGrain();
 })();
 
-/* ── fullscreen ── */
-document.addEventListener('dblclick', (e) => {
-  if (e.target.closest('#add-panel') || e.target.closest('#bar')) return;
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
-  else document.exitFullscreen().catch(()=>{});
-});
+// ── Load Tracks ──
+async function loadTracks() {
+  try {
+    const response = await fetch(SHEET_CSV_URL);
+    const data = await response.text();
+    const rows = data.split('\n').slice(1);
+    
+    tracks = rows.map(row => {
+      // Розділяємо CSV, враховуючи лапки
+      const parts = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+      if (parts && parts.length >= 4) {
+        return {
+          title: parts[2].replace(/"/g, '').trim(),
+          artist: parts[3].replace(/"/g, '').trim(),
+          yt: parts[1].replace(/"/g, '').trim()
+        };
+      }
+      return null;
+    }).filter(t => t && t.yt && t.yt !== "#N/A" && t.yt !== "Loading...");
 
-/* ── background ── */
+    if (tracks.length === 0) throw new Error("No tracks found");
+
+    queue = tracks.map((_, i) => i);
+    buildDrum();
+    updateDrum();
+    setBackground(tracks[queue[0]]);
+  } catch (e) {
+    document.getElementById('drum').innerHTML = '<div style="color:red">Помилка завантаження таблиці! Перевір посилання CSV.</div>';
+  }
+}
+
+// ── background ──
 function setBackground(track) {
+  if (!track) return;
   const next = bgActive === 'a' ? 'b' : 'a';
   const layerNext = document.getElementById('bg-'+next);
   const layerCur  = document.getElementById('bg-'+bgActive);
   const img = new Image();
   img.onload = () => {
     layerNext.style.backgroundImage = `url('${img.src}')`;
-    requestAnimationFrame(() => {
-      layerNext.style.opacity = '1';
-      layerCur.style.opacity  = '0';
-      bgActive = next;
-    });
+    requestAnimationFrame(() => { layerNext.style.opacity = '1'; layerCur.style.opacity = '0'; bgActive = next; });
   };
-  img.onerror = () => { img.onerror=null; img.src=`https://i.ytimg.com/vi/${track.yt}/hqdefault.jpg`; };
   img.src = `https://i.ytimg.com/vi/${track.yt}/maxresdefault.jpg`;
 }
 
-/* ── localStorage ── */
-const LS_KEY = 'playlist_state';
-
-function saveState() {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify({
-      queueIdx: cur,
-      trackIdx: queue[cur],
-      time: (ytOk && yt.getCurrentTime) ? yt.getCurrentTime() : 0,
-      shuffleOn,
-      queue: shuffleOn ? queue : null
-    }));
-  } catch(e) {}
-}
-
-function loadState() {
-  try {
-    const s = JSON.parse(localStorage.getItem(LS_KEY));
-    if (!s) return null;
-    return s;
-  } catch(e) { return null; }
-}
-
-// save position every 5s while playing
-setInterval(() => { if (playing) saveState(); }, 5000);
-
-/* ── drum ── */
+// ── drum ──
 function buildDrum() {
   const drum = document.getElementById('drum');
   drum.innerHTML = '';
@@ -335,32 +273,15 @@ function buildDrum() {
     div.innerHTML = '<span class="title"></span><span class="artist"></span>';
     div.addEventListener('click', () => {
       const offset = parseInt(div.dataset.offset);
-      if (!isNaN(offset) && offset !== 0) {
-        const np = cur + offset;
-        if (np >= 0 && np < queue.length) { cur = np; play(); }
-      }
+      if (!isNaN(offset) && offset !== 0) { const np = cur + offset; if (np >= 0 && np < queue.length) { cur = np; play(); } }
     });
     drum.appendChild(div);
   }
 }
 
-function animateDrum(cb) {
-  // fade out center track, update, fade back in
-  const nodes = document.getElementById('drum').children;
-  const center = nodes[WINDOW];
-  if (!center) { cb(); return; }
-  center.classList.add('animating');
-  setTimeout(() => {
-    cb();
-    // reset transform direction based on scroll direction
-    requestAnimationFrame(() => {
-      center.classList.remove('animating');
-    });
-  }, 200);
-}
-
 function updateDrum() {
   const nodes = document.getElementById('drum').children;
+  if (!nodes.length || !tracks[queue[cur]]) return;
   for (let i = 0; i < nodes.length; i++) {
     const offset = i - WINDOW, qPos = cur + offset, el = nodes[i];
     el.dataset.offset = offset;
@@ -376,77 +297,57 @@ function updateDrum() {
       el.style.pointerEvents = offset === 0 ? 'none' : 'auto';
     }
   }
-  // update page title
-  if (cur >= 0 && cur < queue.length) {
-    const t = tracks[queue[cur]];
-    document.title = `${t.title} — ${t.artist}`;
-  }
+  document.title = `${tracks[queue[cur]].title} — ${tracks[queue[cur]].artist}`;
 }
 
-/* ── playback ── */
-const ppIcon = document.getElementById('pp-icon');
-const pausePath = 'M6 19h4V5H6v14zm8-14v14h4V5h-4z';
-const playPath  = 'M8 5v14l11-7z';
+function animateDrum(cb) {
+  const center = document.getElementById('drum').children[WINDOW];
+  if (!center) { cb(); return; }
+  center.classList.add('animating');
+  setTimeout(() => { cb(); requestAnimationFrame(() => center.classList.remove('animating')); }, 200);
+}
 
-function play(seekTo) {
+// ── playback ──
+const ppIcon = document.getElementById('pp-icon');
+function play() {
   playing = true;
   animateDrum(() => updateDrum());
   setBackground(tracks[queue[cur]]);
-  ppIcon.querySelector('path').setAttribute('d', pausePath);
-  document.getElementById('prog-fill').style.width = '0%';
-  document.getElementById('tc').textContent = '0:00';
-  document.getElementById('td').textContent = '0:00';
-  if (ytOk) {
-    yt.loadVideoById({ videoId: tracks[queue[cur]].yt, startSeconds: seekTo || 0 });
-    yt.playVideo();
-  }
-  if (timer) clearInterval(timer);
-  timer = setInterval(tick, 500);
-  saveState();
+  ppIcon.querySelector('path').setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+  if (ytOk) { yt.loadVideoById(tracks[queue[cur]].yt); yt.playVideo(); }
+  if (timer) clearInterval(timer); timer = setInterval(tick, 500);
 }
 
 function tick() {
   if (!ytOk || !yt.getDuration) return;
-  try {
-    const d = yt.getDuration(), c = yt.getCurrentTime();
-    if (d > 0) {
-      document.getElementById('prog-fill').style.width = (c/d*100)+'%';
-      document.getElementById('tc').textContent = fmt(c);
-      document.getElementById('td').textContent = fmt(d);
-    }
-  } catch(e) {}
+  const d = yt.getDuration(), c = yt.getCurrentTime();
+  if (d > 0) {
+    document.getElementById('prog-fill').style.width = (c/d*100)+'%';
+    document.getElementById('tc').textContent = fmt(c); document.getElementById('td').textContent = fmt(d);
+  }
 }
-
 function fmt(s){ return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); }
 function goNext(){ if(cur<queue.length-1){cur++;play();} }
 function goPrev(){ if(cur>0){cur--;play();} }
 
 document.getElementById('pp').addEventListener('click', () => {
   if (!ytOk) return;
-  if (playing) {
-    yt.pauseVideo(); playing = false;
-    ppIcon.querySelector('path').setAttribute('d', playPath);
-    saveState();
-  } else {
-    yt.playVideo(); playing = true;
-    ppIcon.querySelector('path').setAttribute('d', pausePath);
-    if (!timer) timer = setInterval(tick, 500);
-  }
+  if (playing) { yt.pauseVideo(); playing = false; ppIcon.querySelector('path').setAttribute('d', 'M8 5v14l11-7z'); }
+  else { yt.playVideo(); playing = true; ppIcon.querySelector('path').setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z'); }
 });
-document.getElementById('prev').addEventListener('click', goPrev);
 document.getElementById('next').addEventListener('click', goNext);
+document.getElementById('prev').addEventListener('click', goPrev);
 
 document.getElementById('shuf').addEventListener('click', () => {
   shuffleOn = !shuffleOn;
   document.getElementById('shuf').classList.toggle('on', shuffleOn);
   const ci = queue[cur];
   if (shuffleOn) {
-    const rest = tracks.map((_,i)=>i).filter(i=>i!==ci);
+    let rest = tracks.map((_,i)=>i).filter(i=>i!==ci);
     for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
     queue=[ci,...rest]; cur=0;
   } else { queue=tracks.map((_,i)=>i); cur=queue.indexOf(ci); }
   updateDrum();
-  saveState();
 });
 
 document.getElementById('prog-track').addEventListener('click', (e) => {
@@ -455,133 +356,26 @@ document.getElementById('prog-track').addEventListener('click', (e) => {
   yt.seekTo(yt.getDuration()*(e.clientX-r.left)/r.width,true);
 });
 
-/* ── scroll & swipe ── */
-let wb=0,wraf=null;
-window.addEventListener('wheel',(e)=>{
-  e.preventDefault(); wb+=e.deltaY;
-  if(wraf)return;
-  wraf=requestAnimationFrame(function d(){
-    if(Math.abs(wb)>=50){
-      if(wb>0&&cur<queue.length-1){cur++;play();}
-      else if(wb<0&&cur>0){cur--;play();}
-      wb=0;
-    }
-    wraf=Math.abs(wb)>=50?requestAnimationFrame(d):null;
-  });
-},{passive:false});
-
-let ty=null;
-window.addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:true});
-window.addEventListener('touchend',e=>{
-  if(ty===null)return;
-  const dy=ty-e.changedTouches[0].clientY;
-  if(Math.abs(dy)>40){dy>0?goNext():goPrev();}
-  ty=null;
-});
-
-/* ── add track panel ── */
-const panel    = document.getElementById('add-panel');
-const urlInput = document.getElementById('url-input');
-const statusEl = document.getElementById('status');
-const codeBox  = document.getElementById('code-box');
-const codeOut  = document.getElementById('code-out');
-const copyBtn  = document.getElementById('copy-btn');
-
-function togglePanel() {
-  panel.classList.toggle('open');
-  if (panel.classList.contains('open')) {
-    urlInput.value=''; statusEl.textContent=''; codeBox.classList.remove('show');
-    setTimeout(()=>urlInput.focus(),50);
-  }
-}
-
-window.addEventListener('keydown', (e) => {
-  if ((e.key==='a'||e.key==='A') && e.target.tagName!=='INPUT') togglePanel();
-  if (e.key==='Escape') panel.classList.remove('open');
-});
-
-document.addEventListener('click', (e) => {
-  if (!panel.contains(e.target) && !e.target.closest('#bar')) panel.classList.remove('open');
-});
-
-function extractYtId(url) {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
-  return m ? m[1] : null;
-}
-
-document.getElementById('fetch-btn').addEventListener('click', async () => {
-  const url = urlInput.value.trim();
-  const id = extractYtId(url);
-  if (!id) { statusEl.textContent = '⚠ не вдалось знайти ID відео'; return; }
-  statusEl.textContent = 'завантаження...';
-  codeBox.classList.remove('show');
-  try {
-    const res = await fetch(`https://www.youtube.com/oembed?url=https://youtube.com/watch?v=${id}&format=json`);
-    if (!res.ok) throw new Error();
-    const data = await res.json();
-    let title = data.title
-      .replace(/\s*[\(\[].*(official|video|audio|lyrics|visualizer|mv|clip|hd|4k).*[\)\]]/gi,'')
-      .replace(/\s*-\s*(official|lyrics|audio|video|visualizer).*/gi,'')
-      .trim();
-    let artist = data.author_name.replace(/\s*-\s*Topic$/i,'').replace(/VEVO$/i,'').trim();
-    const line = `  { title:"${title}", artist:"${artist}", yt:"${id}" },`;
-    codeOut.textContent = line;
-    codeBox.classList.add('show');
-    statusEl.textContent = '✓ скопіюй і встав у масив tracks';
-    copyBtn.classList.remove('copied');
-    copyBtn.textContent = 'Копіювати';
-  } catch(e) { statusEl.textContent = '⚠ помилка — перевір посилання'; }
-});
-
-copyBtn.addEventListener('click', () => {
-  navigator.clipboard.writeText(codeOut.textContent).then(() => {
-    copyBtn.textContent = '✓ скопійовано';
-    copyBtn.classList.add('copied');
-    setTimeout(()=>{ copyBtn.textContent='Копіювати'; copyBtn.classList.remove('copied'); },2000);
-  });
-});
-
-/* ── YouTube API ── */
+// ── YouTube API ──
 window.onYouTubeIframeAPIReady = () => {
   yt = new YT.Player('yt-player', {
     height:'1', width:'1', videoId:'',
     playerVars:{ autoplay:0, controls:0 },
     events:{
-      onReady: () => {
-        ytOk = true;
-        // restore saved state
-        const s = loadState();
-        if (s && typeof s.trackIdx === 'number') {
-          // restore shuffle queue
-          if (s.shuffleOn && s.queue) {
-            shuffleOn = true;
-            queue = s.queue;
-            document.getElementById('shuf').classList.add('on');
-          }
-          cur = s.queueIdx || 0;
-          // clamp cur in case tracks changed
-          if (cur >= queue.length) cur = 0;
-          updateDrum();
-          setBackground(tracks[queue[cur]]);
-          // seek to saved position but don't autoplay
-          yt.cueVideoById({ videoId: tracks[queue[cur]].yt, startSeconds: s.time || 0 });
-          document.getElementById('tc').textContent = fmt(s.time || 0);
-        }
-      },
-      onStateChange: (e) => {
-        if (e.data === YT.PlayerState.ENDED) goNext();
-      }
+      onReady: () => { ytOk = true; loadTracks(); },
+      onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) goNext(); }
     }
   });
 };
 
-const s = document.createElement('script');
-s.src = 'https://www.youtube.com/iframe_api';
-document.head.appendChild(s);
+const tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+document.head.appendChild(tag);
 
-buildDrum();
-updateDrum();
-setBackground(tracks[queue[0]]);
+// ── UI Interactivity ──
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'a' || e.key === 'A') document.getElementById('add-panel').classList.toggle('open');
+});
 </script>
 </body>
 </html>
