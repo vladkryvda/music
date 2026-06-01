@@ -10,38 +10,83 @@
 html,body{height:100%;overflow:hidden;font-family:'Space Grotesk',sans-serif}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:#0a0a0a}
 
+/* ── background ── */
 .bg-layer{
   position:fixed;inset:0;z-index:0;
   background-size:cover;background-position:center;
-  filter:blur(70px) saturate(1.6) brightness(0.38);
-  transform:scale(1.2);
-  transition:opacity 1s ease;
+  filter:blur(60px) saturate(2.2) brightness(0.52);
+  transform:scale(1.15);
+  transition:opacity 1.1s ease;
   will-change:opacity;
 }
 #bg-a{opacity:1}
 #bg-b{opacity:0}
 
-.fade-top{position:fixed;top:0;left:0;right:0;height:45vh;z-index:1;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,0.7) 0%,transparent 100%)}
-.fade-bot{position:fixed;bottom:0;left:0;right:0;height:40vh;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 100%)}
+/* grain canvas */
+#grain{
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.055;
+}
 
-.drum-wrap{position:relative;z-index:2;width:100%;max-width:600px;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.drum{width:100%;padding:0 40px;display:flex;flex-direction:column;align-items:center;color:#fff}
+/* vignette — corners always dark so text always readable */
+.vignette{
+  position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%);
+}
 
-.track{text-align:center;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;padding:8px 0}
-.track .title{display:block}
-.track .artist{display:block}
+.fade-top{position:fixed;top:0;left:0;right:0;height:42vh;z-index:2;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(0,0,0,0.62) 0%,transparent 100%)}
+.fade-bot{position:fixed;bottom:0;left:0;right:0;height:38vh;z-index:2;pointer-events:none;
+  background:linear-gradient(to top,rgba(0,0,0,0.75) 0%,transparent 100%)}
 
-.track[data-dist="0"]{padding:12px 0}
-.track[data-dist="0"] .title{font-size:28px;font-weight:600;color:#fff;letter-spacing:-0.02em;line-height:1.15;text-shadow:0 2px 24px rgba(0,0,0,0.5)}
-.track[data-dist="0"] .artist{font-size:12px;font-weight:300;color:rgba(255,255,255,0.55);letter-spacing:0.07em;text-transform:uppercase;margin-top:5px;text-shadow:0 1px 12px rgba(0,0,0,0.4)}
-.track[data-dist="1"]{padding:8px 0}
-.track[data-dist="1"] .title{font-size:17px;font-weight:400;color:rgba(255,255,255,0.45);letter-spacing:-0.01em}
-.track[data-dist="1"] .artist{font-size:10px;font-weight:300;color:rgba(255,255,255,0.2);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px}
-.track[data-dist="2"]{padding:6px 0}
-.track[data-dist="2"] .title{font-size:14px;font-weight:400;color:rgba(255,255,255,0.18)}
-.track[data-dist="2"] .artist{font-size:9px;color:rgba(255,255,255,0.08);letter-spacing:0.05em;text-transform:uppercase;margin-top:1px}
-.track[data-dist="3"]{padding:4px 0}
-.track[data-dist="3"] .title{font-size:12px;font-weight:300;color:rgba(255,255,255,0.06)}
+/* ── drum ── */
+.drum-wrap{
+  position:relative;z-index:3;
+  width:100%;max-width:640px;height:100vh;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+}
+.drum{
+  width:100%;padding:0 44px;
+  display:flex;flex-direction:column;align-items:center;color:#fff;
+}
+
+/* each track fades in/out on change */
+.track{
+  text-align:center;cursor:pointer;width:100%;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;
+  padding:9px 0;
+}
+.track .title,.track .artist{
+  display:block;
+  transition:opacity 0.35s ease, transform 0.35s ease;
+}
+
+/* animate class toggled by JS */
+.track.animating .title,
+.track.animating .artist{
+  opacity:0;
+  transform:translateY(-6px);
+}
+
+.track[data-dist="0"]{padding:14px 0}
+.track[data-dist="0"] .title{
+  font-size:30px;font-weight:600;color:#fff;
+  letter-spacing:-0.025em;line-height:1.15;
+  text-shadow:0 2px 32px rgba(0,0,0,0.45);
+}
+.track[data-dist="0"] .artist{
+  font-size:12.5px;font-weight:300;color:rgba(255,255,255,0.58);
+  letter-spacing:0.08em;text-transform:uppercase;margin-top:6px;
+  text-shadow:0 1px 14px rgba(0,0,0,0.35);
+}
+.track[data-dist="1"]{padding:9px 0}
+.track[data-dist="1"] .title{font-size:18px;font-weight:400;color:rgba(255,255,255,0.44);letter-spacing:-0.01em}
+.track[data-dist="1"] .artist{font-size:10.5px;font-weight:300;color:rgba(255,255,255,0.2);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px}
+.track[data-dist="2"]{padding:7px 0}
+.track[data-dist="2"] .title{font-size:14.5px;font-weight:400;color:rgba(255,255,255,0.17)}
+.track[data-dist="2"] .artist{font-size:9.5px;color:rgba(255,255,255,0.07);letter-spacing:0.05em;text-transform:uppercase;margin-top:1px}
+.track[data-dist="3"]{padding:5px 0}
+.track[data-dist="3"] .title{font-size:12.5px;font-weight:300;color:rgba(255,255,255,0.055)}
 .track[data-dist="3"] .artist{display:none}
 .track[data-dist="4"]{padding:3px 0}
 .track[data-dist="4"] .title{font-size:11px;font-weight:300;color:rgba(255,255,255,0.02)}
@@ -49,38 +94,37 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 
 /* ── player bar ── */
 #bar{
-  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;
-  display:flex;align-items:center;gap:clamp(8px,2.5vw,16px);
-  padding:clamp(9px,2vw,12px) clamp(12px,3vw,20px);
-  border-radius:20px;
-  background:rgba(255,255,255,0.08);
-  backdrop-filter:blur(32px) saturate(1.8);
-  -webkit-backdrop-filter:blur(32px) saturate(1.8);
-  border:1px solid rgba(255,255,255,0.12);
-  box-shadow:0 8px 40px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.1);
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:10;
+  display:flex;align-items:center;
+  gap:clamp(10px,2.2vw,18px);
+  padding:clamp(10px,1.8vw,13px) clamp(14px,2.8vw,22px);
+  border-radius:22px;
+  background:rgba(255,255,255,0.09);
+  backdrop-filter:blur(36px) saturate(1.9);
+  -webkit-backdrop-filter:blur(36px) saturate(1.9);
+  border:1px solid rgba(255,255,255,0.13);
+  box-shadow:0 8px 40px rgba(0,0,0,0.38),inset 0 1px 0 rgba(255,255,255,0.11);
   white-space:nowrap;
-  max-width: calc(100vw - 32px);
+  max-width:calc(100vw - 32px);
 }
 
-/* svg icon buttons */
 .ctrl{
   background:none;border:none;cursor:pointer;
-  color:rgba(255,255,255,0.4);
-  padding:clamp(2px,1vw,4px) clamp(3px,1vw,5px);
+  color:rgba(255,255,255,0.38);
+  padding:clamp(3px,0.8vw,5px);
   transition:color 0.15s;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.ctrl:hover{color:rgba(255,255,255,0.85)}
-.ctrl svg{display:block;width:clamp(11px,3.5vw,14px);height:clamp(11px,3.5vw,14px);fill:currentColor}
-#pp svg{width:clamp(13px,4vw,16px);height:clamp(13px,4vw,16px)}
+.ctrl:hover{color:rgba(255,255,255,0.88)}
+.ctrl svg{display:block;width:clamp(13px,3.2vw,16px);height:clamp(13px,3.2vw,16px);fill:currentColor}
+#pp svg{width:clamp(15px,3.8vw,19px);height:clamp(15px,3.8vw,19px)}
 #pp{color:rgba(255,255,255,0.9)}
 #shuf.on{color:rgba(255,255,255,0.9)}
 
-.prog-wrap{display:flex;align-items:center;gap:clamp(5px,1.5vw,8px);flex:1;min-width:0}
-.prog-track{flex:1;height:2px;background:rgba(255,255,255,0.15);border-radius:999px;cursor:pointer;position:relative;min-width:40px}
-#prog-fill{height:100%;background:rgba(255,255,255,0.75);border-radius:999px;width:0%;pointer-events:none;transition:width 0.4s linear}
-.time{font-size:clamp(9px,2.5vw,10px);font-weight:300;color:rgba(255,255,255,0.3);min-width:0;letter-spacing:0.01em;flex-shrink:0}
+.prog-wrap{display:flex;align-items:center;gap:clamp(6px,1.4vw,9px);flex:1;min-width:0}
+.prog-track{flex:1;height:2px;background:rgba(255,255,255,0.14);border-radius:999px;cursor:pointer;position:relative;min-width:50px}
+#prog-fill{height:100%;background:rgba(255,255,255,0.78);border-radius:999px;width:0%;pointer-events:none;transition:width 0.4s linear}
+.time{font-size:clamp(9.5px,2.2vw,11px);font-weight:300;color:rgba(255,255,255,0.3);min-width:0;letter-spacing:0.01em;flex-shrink:0}
 #tc{text-align:right}
 
 /* ── add track panel ── */
@@ -88,54 +132,40 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
   position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:20;
   display:none;flex-direction:column;gap:10px;
   padding:16px 18px;border-radius:18px;
-  background:rgba(18,18,18,0.8);
+  background:rgba(15,15,15,0.82);
   backdrop-filter:blur(40px) saturate(1.8);
   -webkit-backdrop-filter:blur(40px) saturate(1.8);
-  border:1px solid rgba(255,255,255,0.12);
-  box-shadow:0 8px 40px rgba(0,0,0,0.5);
-  width: calc(100vw - 32px);
-  max-width: 380px;
+  border:1px solid rgba(255,255,255,0.11);
+  box-shadow:0 8px 40px rgba(0,0,0,0.55);
+  width:calc(100vw - 32px);max-width:380px;
 }
 #add-panel.open{display:flex}
-
-#add-panel label{font-size:10px;font-weight:500;color:rgba(255,255,255,0.4);letter-spacing:0.08em;text-transform:uppercase}
-
+#add-panel label{font-size:10px;font-weight:500;color:rgba(255,255,255,0.38);letter-spacing:0.08em;text-transform:uppercase}
 #url-input{
-  background:rgba(255,255,255,0.07);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:10px;
-  color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;
-  padding:9px 12px;outline:none;width:100%;
-  transition:border-color 0.15s;
+  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;
+  padding:9px 12px;outline:none;width:100%;transition:border-color 0.15s;
 }
 #url-input::placeholder{color:rgba(255,255,255,0.2)}
 #url-input:focus{border-color:rgba(255,255,255,0.28)}
-
 .add-row{display:flex;gap:8px;align-items:center}
-
 #fetch-btn{
-  flex-shrink:0;
-  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.14);
+  flex-shrink:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.13);
   border-radius:8px;color:rgba(255,255,255,0.8);font-family:'Space Grotesk',sans-serif;
   font-size:12px;font-weight:500;padding:9px 14px;cursor:pointer;transition:background 0.15s;
 }
-#fetch-btn:hover{background:rgba(255,255,255,0.18);color:#fff}
-
-#status{font-size:11px;color:rgba(255,255,255,0.35);min-height:14px}
-
+#fetch-btn:hover{background:rgba(255,255,255,0.17);color:#fff}
+#status{font-size:11px;color:rgba(255,255,255,0.32);min-height:14px}
 #code-box{display:none;flex-direction:column;gap:6px}
 #code-box.show{display:flex}
-
 #code-out{
   font-family:'Space Mono',monospace,sans-serif;font-size:11px;line-height:1.5;
   background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.07);
   border-radius:8px;padding:10px 12px;color:#a8f0a8;
   word-break:break-all;white-space:pre-wrap;user-select:all;
 }
-
 #copy-btn{
-  align-self:flex-end;
-  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+  align-self:flex-end;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
   border-radius:7px;color:rgba(255,255,255,0.5);font-family:'Space Grotesk',sans-serif;
   font-size:11px;padding:5px 12px;cursor:pointer;transition:all 0.15s;
 }
@@ -149,6 +179,8 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 
 <div class="bg-layer" id="bg-a"></div>
 <div class="bg-layer" id="bg-b"></div>
+<canvas id="grain"></canvas>
+<div class="vignette"></div>
 <div class="fade-top"></div>
 <div class="fade-bot"></div>
 <div id="yt-wrap"><div id="yt-player"></div></div>
@@ -171,26 +203,20 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 </div>
 
 <div id="bar">
-  <!-- prev -->
   <button class="ctrl" id="prev">
     <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
   </button>
-  <!-- play/pause -->
   <button class="ctrl" id="pp">
     <svg id="pp-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
   </button>
-  <!-- next -->
   <button class="ctrl" id="next">
     <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2.5-6 6-4.3v8.6L8.5 12zM16 6h2v12h-2z"/></svg>
   </button>
-
   <div class="prog-wrap">
     <span class="time" id="tc">0:00</span>
     <div class="prog-track" id="prog-track"><div id="prog-fill"></div></div>
     <span class="time" id="td">0:00</span>
   </div>
-
-  <!-- shuffle -->
   <button class="ctrl" id="shuf" title="Shuffle">
     <svg viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
   </button>
@@ -210,7 +236,6 @@ const tracks = [
   { title:"Once in a Lifetime",             artist:"Talking Heads",     yt:"98AJUj-qxHI" },
   { title:"Electric Feel",                  artist:"MGMT",              yt:"MmZexg8sxyk" },
   { title:"God's Plan",                     artist:"Drake",             yt:"xpVfcZ0ZcFM" },
-    { title:"Pink Floyd - Breathe", artist:"Let There Be Rock", yt:"XORFF1OmY80" },
 ];
 
 const WINDOW = 4;
@@ -218,6 +243,36 @@ let cur = 0, playing = false, shuffleOn = false;
 let queue = tracks.map((_,i)=>i);
 let yt = null, ytOk = false, timer = null;
 let bgActive = 'a';
+
+/* ── grain noise ── */
+(function initGrain(){
+  const canvas = document.getElementById('grain');
+  const ctx = canvas.getContext('2d');
+  let w, h, frame = 0;
+
+  function resize(){
+    w = canvas.width  = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function drawGrain(){
+    frame++;
+    // redraw noise every 3 frames so it feels organic but not too heavy
+    if (frame % 3 !== 0) { requestAnimationFrame(drawGrain); return; }
+    const imgd = ctx.createImageData(w, h);
+    const data = imgd.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const v = Math.random() * 255 | 0;
+      data[i] = data[i+1] = data[i+2] = v;
+      data[i+3] = 255;
+    }
+    ctx.putImageData(imgd, 0, 0);
+    requestAnimationFrame(drawGrain);
+  }
+  drawGrain();
+})();
 
 /* ── fullscreen ── */
 document.addEventListener('dblclick', (e) => {
@@ -234,11 +289,41 @@ function setBackground(track) {
   const img = new Image();
   img.onload = () => {
     layerNext.style.backgroundImage = `url('${img.src}')`;
-    requestAnimationFrame(() => { layerNext.style.opacity='1'; layerCur.style.opacity='0'; bgActive=next; });
+    requestAnimationFrame(() => {
+      layerNext.style.opacity = '1';
+      layerCur.style.opacity  = '0';
+      bgActive = next;
+    });
   };
   img.onerror = () => { img.onerror=null; img.src=`https://i.ytimg.com/vi/${track.yt}/hqdefault.jpg`; };
   img.src = `https://i.ytimg.com/vi/${track.yt}/maxresdefault.jpg`;
 }
+
+/* ── localStorage ── */
+const LS_KEY = 'playlist_state';
+
+function saveState() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      queueIdx: cur,
+      trackIdx: queue[cur],
+      time: (ytOk && yt.getCurrentTime) ? yt.getCurrentTime() : 0,
+      shuffleOn,
+      queue: shuffleOn ? queue : null
+    }));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_KEY));
+    if (!s) return null;
+    return s;
+  } catch(e) { return null; }
+}
+
+// save position every 5s while playing
+setInterval(() => { if (playing) saveState(); }, 5000);
 
 /* ── drum ── */
 function buildDrum() {
@@ -259,6 +344,21 @@ function buildDrum() {
   }
 }
 
+function animateDrum(cb) {
+  // fade out center track, update, fade back in
+  const nodes = document.getElementById('drum').children;
+  const center = nodes[WINDOW];
+  if (!center) { cb(); return; }
+  center.classList.add('animating');
+  setTimeout(() => {
+    cb();
+    // reset transform direction based on scroll direction
+    requestAnimationFrame(() => {
+      center.classList.remove('animating');
+    });
+  }, 200);
+}
+
 function updateDrum() {
   const nodes = document.getElementById('drum').children;
   for (let i = 0; i < nodes.length; i++) {
@@ -276,6 +376,11 @@ function updateDrum() {
       el.style.pointerEvents = offset === 0 ? 'none' : 'auto';
     }
   }
+  // update page title
+  if (cur >= 0 && cur < queue.length) {
+    const t = tracks[queue[cur]];
+    document.title = `${t.title} — ${t.artist}`;
+  }
 }
 
 /* ── playback ── */
@@ -283,15 +388,21 @@ const ppIcon = document.getElementById('pp-icon');
 const pausePath = 'M6 19h4V5H6v14zm8-14v14h4V5h-4z';
 const playPath  = 'M8 5v14l11-7z';
 
-function play() {
-  playing = true; updateDrum(); setBackground(tracks[queue[cur]]);
+function play(seekTo) {
+  playing = true;
+  animateDrum(() => updateDrum());
+  setBackground(tracks[queue[cur]]);
   ppIcon.querySelector('path').setAttribute('d', pausePath);
   document.getElementById('prog-fill').style.width = '0%';
   document.getElementById('tc').textContent = '0:00';
   document.getElementById('td').textContent = '0:00';
-  if (ytOk) { yt.loadVideoById(tracks[queue[cur]].yt); yt.playVideo(); }
+  if (ytOk) {
+    yt.loadVideoById({ videoId: tracks[queue[cur]].yt, startSeconds: seekTo || 0 });
+    yt.playVideo();
+  }
   if (timer) clearInterval(timer);
   timer = setInterval(tick, 500);
+  saveState();
 }
 
 function tick() {
@@ -315,6 +426,7 @@ document.getElementById('pp').addEventListener('click', () => {
   if (playing) {
     yt.pauseVideo(); playing = false;
     ppIcon.querySelector('path').setAttribute('d', playPath);
+    saveState();
   } else {
     yt.playVideo(); playing = true;
     ppIcon.querySelector('path').setAttribute('d', pausePath);
@@ -334,6 +446,7 @@ document.getElementById('shuf').addEventListener('click', () => {
     queue=[ci,...rest]; cur=0;
   } else { queue=tracks.map((_,i)=>i); cur=queue.indexOf(ci); }
   updateDrum();
+  saveState();
 });
 
 document.getElementById('prog-track').addEventListener('click', (e) => {
@@ -367,7 +480,7 @@ window.addEventListener('touchend',e=>{
 });
 
 /* ── add track panel ── */
-const panel = document.getElementById('add-panel');
+const panel    = document.getElementById('add-panel');
 const urlInput = document.getElementById('url-input');
 const statusEl = document.getElementById('status');
 const codeBox  = document.getElementById('code-box');
@@ -429,21 +542,46 @@ copyBtn.addEventListener('click', () => {
 });
 
 /* ── YouTube API ── */
-window.onYouTubeIframeAPIReady=()=>{
-  yt=new YT.Player('yt-player',{
-    height:'1',width:'1',videoId:'',
-    playerVars:{autoplay:0,controls:0},
+window.onYouTubeIframeAPIReady = () => {
+  yt = new YT.Player('yt-player', {
+    height:'1', width:'1', videoId:'',
+    playerVars:{ autoplay:0, controls:0 },
     events:{
-      onReady:()=>{ytOk=true;},
-      onStateChange:(e)=>{if(e.data===YT.PlayerState.ENDED)goNext();}
+      onReady: () => {
+        ytOk = true;
+        // restore saved state
+        const s = loadState();
+        if (s && typeof s.trackIdx === 'number') {
+          // restore shuffle queue
+          if (s.shuffleOn && s.queue) {
+            shuffleOn = true;
+            queue = s.queue;
+            document.getElementById('shuf').classList.add('on');
+          }
+          cur = s.queueIdx || 0;
+          // clamp cur in case tracks changed
+          if (cur >= queue.length) cur = 0;
+          updateDrum();
+          setBackground(tracks[queue[cur]]);
+          // seek to saved position but don't autoplay
+          yt.cueVideoById({ videoId: tracks[queue[cur]].yt, startSeconds: s.time || 0 });
+          document.getElementById('tc').textContent = fmt(s.time || 0);
+        }
+      },
+      onStateChange: (e) => {
+        if (e.data === YT.PlayerState.ENDED) goNext();
+      }
     }
   });
 };
-const s=document.createElement('script');
-s.src='https://www.youtube.com/iframe_api';
+
+const s = document.createElement('script');
+s.src = 'https://www.youtube.com/iframe_api';
 document.head.appendChild(s);
 
-buildDrum(); updateDrum(); setBackground(tracks[queue[0]]);
+buildDrum();
+updateDrum();
+setBackground(tracks[queue[0]]);
 </script>
 </body>
 </html>
