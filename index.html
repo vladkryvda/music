@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>playlist</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23e50914'/><path d='M40 30v40l30-20z' fill='white'/></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;font-family:'Space Grotesk',sans-serif}
-body{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:#0a0a0a}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:#050505}
 
 /* ── background ── */
 .bg-layer{
   position:fixed;inset:0;z-index:0;
   background-size:cover;background-position:center;
-  filter:blur(60px) saturate(2.2) brightness(0.52);
+  filter:blur(45px) saturate(1.8) brightness(0.5);
   transform:scale(1.15);
-  transition:opacity 1.1s ease;
+  transition:opacity 1.4s ease;
   will-change:opacity;
 }
 #bg-a{opacity:1}
@@ -24,20 +25,20 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 
 /* grain canvas */
 #grain{
-  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.055;
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.025;
 }
 
-/* vignette — corners always dark so text always readable */
+/* vignette — netflix intro style deep dark with subtle reddish tint */
 .vignette{
   position:fixed;inset:0;z-index:2;pointer-events:none;
   background:
-    radial-gradient(ellipse 120% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%);
+    radial-gradient(ellipse 130% 90% at 50% 50%, rgba(30,0,0,0.05) 10%, rgba(0,0,0,0.5) 85%, rgba(0,0,0,0.7) 100%);
 }
 
 .fade-top{position:fixed;top:0;left:0;right:0;height:42vh;z-index:2;pointer-events:none;
-  background:linear-gradient(to bottom,rgba(0,0,0,0.62) 0%,transparent 100%)}
+  background:linear-gradient(to bottom,rgba(0,0,0,0.4) 0%,transparent 100%)}
 .fade-bot{position:fixed;bottom:0;left:0;right:0;height:38vh;z-index:2;pointer-events:none;
-  background:linear-gradient(to top,rgba(0,0,0,0.75) 0%,transparent 100%)}
+  background:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 100%)}
 
 /* ── drum ── */
 .drum-wrap{
@@ -99,23 +100,23 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
   gap:clamp(10px,2.2vw,18px);
   padding:clamp(10px,1.8vw,13px) clamp(14px,2.8vw,22px);
   border-radius:22px;
-  background:rgba(255,255,255,0.09);
+  background:rgba(25,25,25,0.4);
   backdrop-filter:blur(36px) saturate(1.9);
   -webkit-backdrop-filter:blur(36px) saturate(1.9);
-  border:1px solid rgba(255,255,255,0.13);
-  box-shadow:0 8px 40px rgba(0,0,0,0.38),inset 0 1px 0 rgba(255,255,255,0.11);
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 8px 40px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.05);
   white-space:nowrap;
   max-width:calc(100vw - 32px);
 }
 
 .ctrl{
   background:none;border:none;cursor:pointer;
-  color:rgba(255,255,255,0.38);
+  color:rgba(255,255,255,0.4);
   padding:clamp(3px,0.8vw,5px);
   transition:color 0.15s;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.ctrl:hover{color:rgba(255,255,255,0.88)}
+.ctrl:hover{color:rgba(255,255,255,0.9)}
 .ctrl svg{display:block;width:clamp(13px,3.2vw,16px);height:clamp(13px,3.2vw,16px);fill:currentColor}
 #pp svg{width:clamp(15px,3.8vw,19px);height:clamp(15px,3.8vw,19px)}
 #pp{color:rgba(255,255,255,0.9)}
@@ -210,7 +211,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
     <svg id="pp-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
   </button>
   <button class="ctrl" id="next">
-    <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2.5-6 6-4.3v8.6L8.5 12zM16 6h2v12h-2z"/></svg>
+    <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6z"/></svg>
   </button>
   <div class="prog-wrap">
     <span class="time" id="tc">0:00</span>
@@ -244,7 +245,6 @@ let bgActive = 'a';
 
 /* ── Init Tracks (Cache + Sheet) ── */
 function initTracks() {
-  // 1. Спочатку вантажимо з Local Storage (якщо є)
   try {
     const cachedTracks = localStorage.getItem('playlist_tracks_data');
     if (cachedTracks) {
@@ -254,7 +254,6 @@ function initTracks() {
   
   queue = tracks.map((_,i)=>i);
 
-  // 2. Фонове завантаження з CSV
   if (CSV_URL) fetchCSV();
 }
 
@@ -267,7 +266,7 @@ async function fetchCSV() {
     const newTracks = [];
     
     for (const row of rows) {
-      const cols = row.split(','); // Очікується: url, title, artist
+      const cols = row.split(',');
       if (cols.length >= 1) {
         const ytId = extractYtId(cols[0]) || cols[0].trim();
         const title = cols[1] ? cols[1].trim() : 'Unknown';
@@ -276,12 +275,10 @@ async function fetchCSV() {
       }
     }
 
-    // Якщо треки оновилися
     if (newTracks.length > 0 && JSON.stringify(newTracks) !== JSON.stringify(tracks)) {
       tracks = newTracks;
       localStorage.setItem('playlist_tracks_data', JSON.stringify(tracks));
       
-      // Перебудовуємо чергу, зберігаючи шафл якщо він був
       const oldShuf = shuffleOn;
       queue = tracks.map((_,i)=>i);
       if (oldShuf) {
@@ -290,7 +287,7 @@ async function fetchCSV() {
         queue=[0,...rest];
       }
       
-      cur = 0; // Скидаємо на початок
+      cur = 0;
       buildDrum();
       updateDrum();
       if (!playing && !ytOk) setBackground(tracks[queue[cur]]);
@@ -319,8 +316,12 @@ initTracks();
     const imgd = ctx.createImageData(w, h);
     const data = imgd.data;
     for (let i = 0; i < data.length; i += 4) {
+      // Create slight red/monochrome noise instead of pure grey
       const v = Math.random() * 255 | 0;
-      data[i] = data[i+1] = data[i+2] = v;
+      const rv = Math.random() * 255 | 0;
+      data[i] = rv;     // R
+      data[i+1] = v;    // G
+      data[i+2] = v;    // B
       data[i+3] = 255;
     }
     ctx.putImageData(imgd, 0, 0);
@@ -342,30 +343,56 @@ function setBackground(track) {
   const next = bgActive === 'a' ? 'b' : 'a';
   const layerNext = document.getElementById('bg-'+next);
   const layerCur  = document.getElementById('bg-'+bgActive);
-  const img = new Image();
-  img.onload = () => {
-    layerNext.style.backgroundImage = `url('${img.src}')`;
+  
+  const applyFallback = () => {
+    layerNext.style.backgroundImage = 'radial-gradient(ellipse at 50% -20%, #4a0004 0%, #050000 65%)';
     requestAnimationFrame(() => {
       layerNext.style.opacity = '1';
       layerCur.style.opacity  = '0';
       bgActive = next;
     });
   };
-  img.onerror = () => { img.onerror=null; img.src=`https://i.ytimg.com/vi/${track.yt}/hqdefault.jpg`; };
-  img.src = `https://i.ytimg.com/vi/${track.yt}/maxresdefault.jpg`;
+
+  const loadImg = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = () => reject();
+      img.src = url;
+    });
+  };
+
+  loadImg(`https://i.ytimg.com/vi/${track.yt}/maxresdefault.jpg`)
+    .then(img => {
+      if (img.width === 120) throw new Error("default thumbnail");
+      layerNext.style.backgroundImage = `url('${img.src}')`;
+      requestAnimationFrame(() => {
+        layerNext.style.opacity = '1';
+        layerCur.style.opacity  = '0';
+        bgActive = next;
+      });
+    })
+    .catch(() => {
+      loadImg(`https://i.ytimg.com/vi/${track.yt}/hqdefault.jpg`)
+        .then(img => {
+          if (img.width === 120) throw new Error("default thumbnail");
+          layerNext.style.backgroundImage = `url('${img.src}')`;
+          requestAnimationFrame(() => {
+            layerNext.style.opacity = '1';
+            layerCur.style.opacity  = '0';
+            bgActive = next;
+          });
+        })
+        .catch(() => {
+          applyFallback();
+        });
+    });
 
   updateMetaAndFavicon(track);
 }
 
 function updateMetaAndFavicon(track) {
-  // Динамічний Favicon
-  let link = document.querySelector("link[rel~='icon']");
-  if (!link) {
-    link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link);
-  }
-  link.href = `https://i.ytimg.com/vi/${track.yt}/hqdefault.jpg`;
-
-  // Media Session API (для ОС та кнопок клавіатури)
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: track.title,
@@ -515,7 +542,6 @@ function togglePlay() {
 document.getElementById('prev').addEventListener('click', goPrev);
 document.getElementById('next').addEventListener('click', goNext);
 
-// Налаштування Media Session кнопок
 if ('mediaSession' in navigator) {
   navigator.mediaSession.setActionHandler('play', togglePlay);
   navigator.mediaSession.setActionHandler('pause', togglePlay);
@@ -566,7 +592,7 @@ window.addEventListener('touchend',e=>{
   ty=null;
 });
 
-/* ── add track panel (залишено як було) ── */
+/* ── add track panel ── */
 const panel    = document.getElementById('add-panel');
 const urlInput = document.getElementById('url-input');
 const statusEl = document.getElementById('status');
@@ -641,7 +667,6 @@ window.onYouTubeIframeAPIReady = () => {
         if (s && typeof s.trackIdx === 'number' && tracks.length > 0) {
           if (s.shuffleOn && s.queue) {
             shuffleOn = true;
-            // Перевіряємо щоб довжина черги співпадала, інакше шафлимо наново
             if(s.queue.length === tracks.length) queue = s.queue; 
             document.getElementById('shuf').classList.add('on');
           }
