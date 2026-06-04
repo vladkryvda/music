@@ -131,47 +131,33 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 /* ── add track panel ── */
 #add-panel{
   position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:20;
-  display:none;flex-direction:column;gap:10px;
-  padding:16px 18px;border-radius:18px;
+  display:none;flex-direction:column;gap:12px;
+  padding:20px;border-radius:20px;
   background:rgba(15,15,15,0.82);
   backdrop-filter:blur(40px) saturate(1.8);
   -webkit-backdrop-filter:blur(40px) saturate(1.8);
   border:1px solid rgba(255,255,255,0.11);
   box-shadow:0 8px 40px rgba(0,0,0,0.55);
-  width:calc(100vw - 32px);max-width:380px;
+  width:calc(100vw - 32px);max-width:320px;
 }
 #add-panel.open{display:flex}
-#add-panel label{font-size:10px;font-weight:500;color:rgba(255,255,255,0.38);letter-spacing:0.08em;text-transform:uppercase}
-#url-input{
-  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
-  border-radius:10px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;
-  padding:9px 12px;outline:none;width:100%;transition:border-color 0.15s;
+#add-panel label{font-size:11px;font-weight:500;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;text-align:center;}
+.panel-input{
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:14px;
+  padding:12px 14px;outline:none;width:100%;transition:border-color 0.15s, background 0.15s;
 }
-#url-input::placeholder{color:rgba(255,255,255,0.2)}
-#url-input:focus{border-color:rgba(255,255,255,0.28)}
-.add-row{display:flex;gap:8px;align-items:center}
-#fetch-btn{
-  flex-shrink:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.13);
-  border-radius:8px;color:rgba(255,255,255,0.8);font-family:'Space Grotesk',sans-serif;
-  font-size:12px;font-weight:500;padding:9px 14px;cursor:pointer;transition:background 0.15s;
+.panel-input::placeholder{color:rgba(255,255,255,0.2)}
+.panel-input:focus{border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.08);}
+
+#save-btn{
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.13);
+  border-radius:12px;color:rgba(255,255,255,0.9);font-family:'Space Grotesk',sans-serif;
+  font-size:14px;font-weight:500;padding:12px;cursor:pointer;transition:all 0.2s;
+  margin-top:4px;
 }
-#fetch-btn:hover{background:rgba(255,255,255,0.17);color:#fff}
-#status{font-size:11px;color:rgba(255,255,255,0.32);min-height:14px}
-#code-box{display:none;flex-direction:column;gap:6px}
-#code-box.show{display:flex}
-#code-out{
-  font-family:'Space Mono',monospace,sans-serif;font-size:11px;line-height:1.5;
-  background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.07);
-  border-radius:8px;padding:10px 12px;color:#a8f0a8;
-  word-break:break-all;white-space:pre-wrap;user-select:all;
-}
-#copy-btn{
-  align-self:flex-end;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
-  border-radius:7px;color:rgba(255,255,255,0.5);font-family:'Space Grotesk',sans-serif;
-  font-size:11px;padding:5px 12px;cursor:pointer;transition:all 0.15s;
-}
-#copy-btn:hover{background:rgba(255,255,255,0.13);color:#fff}
-#copy-btn.copied{color:#a8f0a8;border-color:rgba(168,240,168,0.25)}
+#save-btn:hover{background:rgba(255,255,255,0.15);color:#fff}
+#save-btn.success{background:rgba(168,240,168,0.15);color:#a8f0a8;border-color:rgba(168,240,168,0.3);}
 
 #yt-wrap{position:fixed;left:-9999px;bottom:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
 </style>
@@ -188,15 +174,10 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 
 <div id="add-panel">
   <label>Додати трек</label>
-  <div class="add-row">
-    <input id="url-input" type="text" placeholder="https://youtube.com/watch?v=...">
-    <button id="fetch-btn">→ OK</button>
-  </div>
-  <div id="status"></div>
-  <div id="code-box">
-    <pre id="code-out"></pre>
-    <button id="copy-btn">Копіювати</button>
-  </div>
+  <input class="panel-input" id="url-input" type="text" placeholder="YouTube URL">
+  <input class="panel-input" id="title-input" type="text" placeholder="Назва треку">
+  <input class="panel-input" id="artist-input" type="text" placeholder="Автор">
+  <button id="save-btn">Додати</button>
 </div>
 
 <div class="drum-wrap">
@@ -224,8 +205,9 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 </div>
 
 <script>
-// Встав сюди посилання на опублікований CSV з Google Таблиць
+// --- ТВОЇ ПОСИЛАННЯ ---
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6DmOMoxZgViN6u3mrjqKQkdrWXD4O2G9C7hxvbvuv6M3j9rg0M5687QFrIaAN4415UEYhvKkWmRMe/pub?output=csv'; 
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzHYJWs_ZySZo8sJgvhZxk9-P1MaN9k3jv4HPVAT5KzgglLP_h2nmOOh9CQyXKfkGy3/exec'; // Встав сюди своє посилання на Apps Script (додавання)
 
 // Дефолтні треки (заміняться, якщо знайдеться кеш або CSV)
 let tracks = [
@@ -253,7 +235,6 @@ function initTracks() {
   } catch(e) {}
   
   queue = tracks.map((_,i)=>i);
-
   if (CSV_URL) fetchCSV();
 }
 
@@ -316,7 +297,6 @@ initTracks();
     const imgd = ctx.createImageData(w, h);
     const data = imgd.data;
     for (let i = 0; i < data.length; i += 4) {
-      // Create slight red/monochrome noise instead of pure grey
       const v = Math.random() * 255 | 0;
       const rv = Math.random() * 255 | 0;
       data[i] = rv;     // R
@@ -592,25 +572,33 @@ window.addEventListener('touchend',e=>{
   ty=null;
 });
 
-/* ── add track panel ── */
-const panel    = document.getElementById('add-panel');
-const urlInput = document.getElementById('url-input');
-const statusEl = document.getElementById('status');
-const codeBox  = document.getElementById('code-box');
-const codeOut  = document.getElementById('code-out');
-const copyBtn  = document.getElementById('copy-btn');
+/* ── add track panel (UPDATED) ── */
+const panel       = document.getElementById('add-panel');
+const urlInput    = document.getElementById('url-input');
+const titleInput  = document.getElementById('title-input');
+const artistInput = document.getElementById('artist-input');
+const saveBtn     = document.getElementById('save-btn');
 
 function togglePanel() {
   panel.classList.toggle('open');
   if (panel.classList.contains('open')) {
-    urlInput.value=''; statusEl.textContent=''; codeBox.classList.remove('show');
-    setTimeout(()=>urlInput.focus(),50);
+    // Очищаємо поля та повертаємо кнопку в початковий стан при відкритті
+    urlInput.value = '';
+    titleInput.value = '';
+    artistInput.value = '';
+    saveBtn.className = '';
+    saveBtn.textContent = 'Додати';
+    setTimeout(() => urlInput.focus(), 50);
   }
 }
 
 window.addEventListener('keydown', (e) => {
-  if ((e.key==='a'||e.key==='A') && e.target.tagName!=='INPUT') togglePanel();
-  if (e.key==='Escape') panel.classList.remove('open');
+  // Відкриття/Закриття на клавішу M (ігноруємо, якщо користувач вводить текст)
+  if ((e.key === 'm' || e.key === 'M') && e.target.tagName !== 'INPUT') {
+    e.preventDefault();
+    togglePanel();
+  }
+  if (e.key === 'Escape') panel.classList.remove('open');
 });
 
 document.addEventListener('click', (e) => {
@@ -623,36 +611,41 @@ function extractYtId(url) {
   return m ? m[1] : url.trim();
 }
 
-document.getElementById('fetch-btn').addEventListener('click', async () => {
+saveBtn.addEventListener('click', () => {
   const url = urlInput.value.trim();
-  const id = extractYtId(url);
-  if (!id) { statusEl.textContent = '⚠ не вдалось знайти ID відео'; return; }
-  statusEl.textContent = 'завантаження...';
-  codeBox.classList.remove('show');
-  try {
-    const res = await fetch(`https://www.youtube.com/oembed?url=https://youtube.com/watch?v=${id}&format=json`);
-    if (!res.ok) throw new Error();
-    const data = await res.json();
-    let title = data.title
-      .replace(/\s*[\(\[].*(official|video|audio|lyrics|visualizer|mv|clip|hd|4k).*[\)\]]/gi,'')
-      .replace(/\s*-\s*(official|lyrics|audio|video|visualizer).*/gi,'')
-      .trim();
-    let artist = data.author_name.replace(/\s*-\s*Topic$/i,'').replace(/VEVO$/i,'').trim();
-    const line = `  { title:"${title}", artist:"${artist}", yt:"${id}" },`;
-    codeOut.textContent = line;
-    codeBox.classList.add('show');
-    statusEl.textContent = '✓ скопіюй і встав у масив tracks';
-    copyBtn.classList.remove('copied');
-    copyBtn.textContent = 'Копіювати';
-  } catch(e) { statusEl.textContent = '⚠ помилка — перевір посилання'; }
-});
+  const title = titleInput.value.trim();
+  const artist = artistInput.value.trim();
+  
+  if (!url) return;
 
-copyBtn.addEventListener('click', () => {
-  navigator.clipboard.writeText(codeOut.textContent).then(() => {
-    copyBtn.textContent = '✓ скопійовано';
-    copyBtn.classList.add('copied');
-    setTimeout(()=>{ copyBtn.textContent='Копіювати'; copyBtn.classList.remove('copied'); },2000);
-  });
+  // Одразу показуємо галочку імітуючи миттєву відправку
+  saveBtn.textContent = '✓ Відправлено';
+  saveBtn.classList.add('success');
+  
+  // Закриваємо панель через 1 секунду
+  setTimeout(() => {
+    panel.classList.remove('open');
+  }, 1000);
+
+  const ytId = extractYtId(url);
+  
+  // Додаємо в локальний масив, щоб трек одразу з'явився у барабані
+  if (ytId) {
+    tracks.push({ yt: ytId, title: title || 'Unknown', artist: artist || 'Unknown' });
+    queue.push(tracks.length - 1); // Додаємо в кінець черги
+    updateDrum();
+  }
+
+  // Відправляємо дані на сервер фоном (якщо налаштовано WEB_APP_URL)
+  if (WEB_APP_URL) {
+    try {
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ url: url, title: title, artist: artist })
+      });
+    } catch(e) {}
+  }
 });
 
 /* ── YouTube API ── */
